@@ -1,0 +1,57 @@
+# ── Personal data — never commit ─────────────────────────────
+data/
+*.db
+*.db-journal
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+.env
+.env.*
+*.env
+
+# PII-bearing local harnesses and generated outputs
+scripts/audit_trial.py
+scripts/drive_trial.py
+test-results/
+resume_evaluations*.csv
+/*.pdf
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+build/
+
+# ── Node ─────────────────────────────────────────────────────
+node_modules/
+dist/
+*.local
+npm-debug.log*
+.eslintcache
+*.tsbuildinfo
+
+# ── Test / browser artifacts ─────────────────────────────────
+playwright-report/
+.playwright/
+
+# ── Harness / editors ────────────────────────────────────────
+.claude/settings.local.json
+.superpowers/
+.DS_Store
+.idea/
+.vscode/
+
+# ── LaTeX build artifacts ────────────────────────────────────
+*.aux
+*.log
+*.out
+*.synctex.gz
+docs/superpowers/
+scripts/publish.sh

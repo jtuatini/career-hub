@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>MockATS — Software Intern at TestCorp</title>
+<style>
+  body { font: 15px/1.6 system-ui, sans-serif; max-width: 640px; margin: 40px auto; }
+  .step { display: none; } .step.on { display: block; }
+  label { display: block; margin: 12px 0 2px; }
+  input, select, textarea { width: 100%; padding: 6px; font: inherit; }
+  button { margin-top: 16px; padding: 8px 18px; font: inherit; }
+</style></head>
+<body>
+<h1>Software Intern</h1>
+<p id="jd">TestCorp is hiring a software intern to build Python backend services
+and React frontends. You will ship real features, write tests, and review code
+with senior engineers. We value curiosity, clear writing, and bias to action.
+Requirements: Python, TypeScript, Git. Nice to have: FastAPI, SQLite, LaTeX.</p>
+
+<form id="wizard">
+  <div class="step on" data-step="1">
+    <label for="first">First name</label><input id="first" name="first_name" type="text">
+    <label for="last">Last name</label><input id="last" name="last_name" type="text">
+    <label for="email">Email address</label><input id="email" name="email" type="email">
+    <label for="country">Country</label>
+    <select id="country" name="country"><option></option><option>United States</option><option>Canada</option></select>
+    <button type="submit" data-goto="2">Next</button>
+  </div>
+  <div class="step" data-step="2">
+    <label for="resume">Resume/CV (PDF)</label><input id="resume" name="resume" type="file">
+    <label for="cover">Cover letter (optional)</label><input id="cover" name="cover_letter" type="file">
+    <label for="essay">Why do you want to work at TestCorp?</label>
+    <textarea id="essay" name="why_us" rows="6"></textarea>
+    <button type="submit" data-goto="3">Save and continue</button>
+  </div>
+  <div class="step" data-step="3">
+    <p>Review your application, then submit.</p>
+    <button type="submit" id="final-submit">Submit Application</button>
+  </div>
+</form>
+
+<script>
+  window.__submitted = false;
+  window.__nextClicks = 0;
+  document.getElementById("wizard").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const btn = e.submitter;
+    if (btn && btn.id === "final-submit") { window.__submitted = true; document.body.append(" SUBMITTED"); return; }
+    if (btn && btn.dataset.goto) {
+      window.__nextClicks += 1;
+      document.querySelectorAll(".step").forEach((s) => s.classList.remove("on"));
+      document.querySelector(`[data-step="${btn.dataset.goto}"]`).classList.add("on");
+      history.pushState({}, "", `#step${btn.dataset.goto}`);
+    }
+  });
+</script>
+</body>
+</html>

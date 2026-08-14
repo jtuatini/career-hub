@@ -1,0 +1,116 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>RealWidgets — Aerospace Intern at TestCorp</title>
+<style>
+  body { font: 15px/1.6 system-ui, sans-serif; max-width: 640px; margin: 40px auto; }
+  label, .application-label { display: block; margin: 12px 0 2px; }
+  input, select, textarea { width: 100%; padding: 6px; font: inherit; box-sizing: border-box; }
+  .menu { border: 1px solid #999; background: #fff; }
+  .menu [role="option"] { padding: 4px 8px; cursor: pointer; }
+  button { margin-top: 16px; padding: 8px 18px; font: inherit; }
+  li { list-style: none; }
+</style></head>
+<body>
+<h1>Aerospace Intern</h1>
+<p id="jd">TestCorp is hiring an aerospace intern. Requirements: C++, Python, MATLAB.</p>
+
+<form id="app">
+  <!-- Greenhouse-style: proper <label for>, react-select-like combobox whose
+       committed value lives in internal state. Raw .value writes reset on
+       blur; options commit ONLY on mousedown. School options load async. -->
+  <div class="field">
+    <label for="school-input">School*</label>
+    <div class="select-shell">
+      <input id="school-input" role="combobox" aria-autocomplete="list" aria-expanded="false" type="text">
+      <div class="menu" id="school-menu" hidden></div>
+    </div>
+  </div>
+
+  <!-- Wrapper-role variant (react-select v4): role="combobox" on the DIV,
+       bare inner input with no role of its own -->
+  <div class="field">
+    <label for="cpp-input">How much experience in C++ programming language do you have?*</label>
+    <div class="select-shell" role="combobox" aria-expanded="false">
+      <input id="cpp-input" type="text">
+      <div class="menu" id="cpp-menu" hidden></div>
+    </div>
+  </div>
+
+  <!-- Short answer as a plain text input -->
+  <div class="field">
+    <label for="gpa">GPA (Undergraduate)*</label>
+    <input id="gpa" type="text">
+  </div>
+
+  <!-- Lever-style question blocks: question text in a sibling div, OUTSIDE
+       any <label>/<legend> -->
+  <li class="application-question">
+    <div class="application-label">Why do you want to work at TestCorp?✱</div>
+    <div class="application-field"><textarea name="cards[essay1]"></textarea></div>
+  </li>
+  <li class="application-question">
+    <div class="application-label">Are you legally authorized to work in the United States?✱</div>
+    <div class="application-field">
+      <label><input type="radio" name="cards[auth]" value="yes">Yes</label>
+      <label><input type="radio" name="cards[auth]" value="no">No</label>
+    </div>
+  </li>
+
+  <div class="field">
+    <label for="resume">Resume/CV</label>
+    <input id="resume" name="resume" type="file">
+  </div>
+
+  <button type="button" id="next">Next</button>
+  <button type="submit" id="submit-app">Submit Application</button>
+</form>
+
+<script>
+  window.__submitted = false;
+  document.getElementById("app").addEventListener("submit", (e) => {
+    e.preventDefault();
+    window.__submitted = true;
+    document.body.append(" SUBMITTED");
+  });
+
+  function combo(inputId, menuId, loader) {
+    const input = document.getElementById(inputId);
+    const menu = document.getElementById(menuId);
+    const state = { committed: "" };
+    window["__combo_" + inputId] = state;
+    function close() { menu.hidden = true; input.setAttribute("aria-expanded", "false"); }
+    function render(options) {
+      menu.innerHTML = "";
+      for (const text of options) {
+        const div = document.createElement("div");
+        div.setAttribute("role", "option");
+        div.textContent = text;
+        div.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          state.committed = text;
+          input.value = text;
+          close();
+        });
+        menu.appendChild(div);
+      }
+      menu.hidden = options.length === 0;
+      input.setAttribute("aria-expanded", String(!menu.hidden));
+    }
+    input.addEventListener("input", () => loader(input.value, render));
+    input.addEventListener("click", () => loader(input.value, render));
+    input.addEventListener("blur", () => setTimeout(() => { input.value = state.committed; close(); }, 0));
+    input.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  }
+
+  const SCHOOLS = ["Purdue University", "University of Michigan - Ann Arbor", "University of Texas at Austin"];
+  combo("school-input", "school-menu", (q, render) => {
+    setTimeout(() => {  // search-backed list: options arrive later
+      const ql = q.trim().toLowerCase();
+      render(ql ? SCHOOLS.filter((s) => s.toLowerCase().includes(ql.slice(0, 24))) : []);
+    }, 250);
+  });
+  const CPP = ["No experience", "Less than 1 year", "1 - 2 years", "3+ years"];
+  combo("cpp-input", "cpp-menu", (q, render) => render(CPP));
+</script>
+</body>
+</html>

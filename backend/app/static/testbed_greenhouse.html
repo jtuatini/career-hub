@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cascade Robotics — Embedded Software Intern (Summer 2027)</title>
+<meta property="og:site_name" content="Cascade Robotics">
+<style>
+  /* Greenhouse-clone testbed: every dropdown is a react-select-style combobox
+     (typed text never commits; blur clears uncommitted text), file inputs are
+     hidden behind styled Attach buttons, and the EEOC section uses the real
+     platform wordings. No form action, no fetch — fully local. */
+  :root { --ink: #23282d; --line: #d2d8de; --accent: #106b45; --soft: #f6f8f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #fff; }
+  .test-banner { background: #7a1f1f; color: #fff; text-align: center; padding: 6px 12px; font-size: 13px; }
+  header.jobhead { background: var(--soft); border-bottom: 1px solid var(--line); padding: 22px 0; }
+  .wrap { max-width: 700px; margin: 0 auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #5a6b7d; font-size: 14px; }
+  main { padding: 20px 0 90px; }
+  .jd { border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin: 18px 0; font-size: 14px; }
+  h2.section-header { font-size: 18px; margin: 30px 0 6px; border-bottom: 2px solid var(--accent); padding-bottom: 6px; }
+  .field { margin: 14px 0; }
+  label, .upload-label, .q-label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+  .hint { font-weight: 400; color: #5a6b7d; font-size: 12.5px; }
+  input[type=text], input[type=email], input[type=tel], textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; background: #fff;
+  }
+  textarea { resize: vertical; }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; margin: 14px 0; padding: 10px 14px 14px; }
+  legend { font-weight: 600; padding: 0 6px; font-size: 13.5px; }
+  /* react-select clone */
+  .select__control { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 6px; background: #fff; padding: 2px 6px; min-height: 38px; position: relative; }
+  .select__value { padding: 0 4px; color: var(--ink); white-space: nowrap; }
+  .select__input { flex: 1; border: none !important; outline: none; padding: 6px 4px !important; min-width: 40px; }
+  .select__indicator { color: #8a97a5; padding: 0 6px; cursor: pointer; user-select: none; }
+  .gh-hidden-req { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; border: 0; padding: 0; }
+  .select__menu { position: absolute; z-index: 40; background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    box-shadow: 0 8px 22px rgba(20,34,50,.16); max-height: 220px; overflow: auto; }
+  .select__menu [role=option] { padding: 7px 10px; cursor: pointer; }
+  .select__menu [role=option]:hover { background: #e7f3ee; }
+  .upload { border: 1px dashed var(--line); border-radius: 8px; padding: 12px 14px; }
+  .upload button { margin-right: 8px; }
+  .upload .file-name { color: #106b45; font-size: 13px; margin-left: 6px; }
+  button { font: inherit; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; padding: 12px 22px; }
+  .honeypot { display: none; }
+  #submit-note { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #103b1a; color: #d9f7e1; }
+</style>
+</head>
+<body>
+<div class="test-banner">LOCAL TESTBED (Greenhouse-style) — served by your own backend; nothing is ever sent anywhere.</div>
+
+<header class="jobhead">
+  <div class="wrap">
+    <h1>Embedded Software Intern — Flight Controls (Summer 2027)</h1>
+    <p class="meta">Cascade Robotics · Seattle, WA (onsite) · Internship</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="jd">
+    <h2>About the role</h2>
+    <p>Cascade Robotics builds fixed-wing VTOL aircraft for wildfire monitoring. Our Embedded
+    Software Interns write C++17 flight-control and telemetry code that runs on real aircraft, and
+    Python ground tooling for hardware-in-the-loop test rigs. Recent interns shipped a CAN bus
+    fault injector, a barometric altitude fusion fix, and a regression harness that runs on every
+    merge.</p>
+    <p><strong>Qualifications:</strong> pursuing a BS/MS in CS, CE, EE, Aerospace, or similar;
+    strong C++ or Python; comfort with test equipment a plus. $40–$47/hr. Cascade Robotics is an
+    equal opportunity employer.</p>
+  </div>
+
+  <h2 class="section-header">Apply for this job</h2>
+  <p class="hint">Required fields are marked with an asterisk (*).</p>
+
+  <form id="app-form" autocomplete="off" novalidate>
+
+  <div class="field"><label for="first_name">First Name *</label><input type="text" id="first_name" name="first_name" required></div>
+  <div class="field"><label for="last_name">Last Name *</label><input type="text" id="last_name" name="last_name" required></div>
+  <div class="field"><label for="email">Email *</label><input type="email" id="email" name="email" required></div>
+
+  <fieldset>
+    <legend>Phone</legend>
+    <div class="field">
+      <label for="phone_country">Country</label>
+      <div class="select__control" data-combo="phone_country">
+        <span class="select__value" id="phone_country-value"></span>
+        <input class="select__input" id="phone_country" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+        <span class="select__indicator" data-toggle="phone_country">▾</span>
+        <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+      </div>
+    </div>
+    <div class="field"><label for="phone">Phone *</label><input type="tel" id="phone" name="phone" required></div>
+  </fieldset>
+
+  <div class="field">
+    <label for="candidate-location">Location (City) *</label>
+    <div class="select__control" data-combo="candidate-location">
+      <span class="select__value" id="candidate-location-value"></span>
+      <input class="select__input" id="candidate-location" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" placeholder="Start typing your city…">
+      <span class="select__indicator" data-toggle="candidate-location">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+    <p class="hint">Type-ahead backed by an async location service (results arrive after a delay).</p>
+  </div>
+
+  <!-- honeypot trap: invisible, must never be filled -->
+  <div class="honeypot"><label for="website_hp">Website</label><input type="text" id="website_hp" name="website_hp"></div>
+
+  <div class="field">
+    <div class="upload-label">Resume/CV *</div>
+    <div class="upload">
+      <button type="button" data-attach="resume">Attach</button>
+      <span class="hint">pdf, doc, docx, txt, rtf</span><span class="file-name" id="resume-name"></span>
+      <input type="file" id="resume" name="resume" class="gh-hidden-req" accept=".pdf,.doc,.docx,.txt,.rtf">
+    </div>
+  </div>
+  <div class="field">
+    <div class="upload-label">Cover Letter</div>
+    <div class="upload">
+      <button type="button" data-attach="cover_letter">Attach</button>
+      <span class="hint">pdf, doc, docx, txt, rtf</span><span class="file-name" id="cover_letter-name"></span>
+      <input type="file" id="cover_letter" name="cover_letter" class="gh-hidden-req" accept=".pdf,.doc,.docx,.txt,.rtf">
+    </div>
+  </div>
+
+  <h2 class="section-header">Education</h2>
+  <div class="field">
+    <label for="school--0">School *</label>
+    <div class="select__control" data-combo="school--0">
+      <span class="select__value" id="school--0-value"></span>
+      <input class="select__input" id="school--0" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" placeholder="Search for your school…">
+      <span class="select__indicator" data-toggle="school--0">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+    <p class="hint">Async school search; option wording may not match your notes exactly.</p>
+  </div>
+  <div class="field">
+    <label for="degree--0">Degree *</label>
+    <div class="select__control" data-combo="degree--0">
+      <span class="select__value" id="degree--0-value"></span>
+      <input class="select__input" id="degree--0" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="degree--0">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+  </div>
+  <div class="field">
+    <label for="discipline--0">Discipline *</label>
+    <div class="select__control" data-combo="discipline--0">
+      <span class="select__value" id="discipline--0-value"></span>
+      <input class="select__input" id="discipline--0" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="discipline--0">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+  </div>
+
+  <h2 class="section-header">Additional questions</h2>
+  <div class="field"><label for="question_7001">LinkedIn Profile</label><input type="text" id="question_7001" name="question_7001"></div>
+  <div class="field"><label for="question_7002">Website / Portfolio / GitHub</label><input type="text" id="question_7002" name="question_7002"></div>
+  <div class="field">
+    <label for="question_7003">Are you legally authorized to work in the United States? *</label>
+    <div class="select__control" data-combo="question_7003">
+      <span class="select__value" id="question_7003-value"></span>
+      <input class="select__input" id="question_7003" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="question_7003">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+  </div>
+  <div class="field">
+    <label for="question_7004">Will you now or in the future require sponsorship for employment visa status (e.g. H-1B visa status)? *</label>
+    <div class="select__control" data-combo="question_7004">
+      <span class="select__value" id="question_7004-value"></span>
+      <input class="select__input" id="question_7004" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="question_7004">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+  </div>
+  <div class="field">
+    <!-- deliberately NO aria attributes on this input: detection must fall back
+         to the select__input class hint -->
+    <label for="question_7005">How did you hear about this job? *</label>
+    <div class="select__control" data-combo="question_7005">
+      <span class="select__value" id="question_7005-value"></span>
+      <input class="select__input" id="question_7005">
+      <span class="select__indicator" data-toggle="question_7005">▾</span>
+      <input class="gh-hidden-req" required tabindex="-1" aria-hidden="true">
+    </div>
+  </div>
+  <div class="field">
+    <label for="question_7006">What draws you to flight software specifically? *</label>
+    <textarea id="question_7006" name="question_7006" rows="6" required></textarea>
+    <p class="hint">2–4 sentences is plenty.</p>
+  </div>
+  <div class="field"><label for="question_7007">What are your salary expectations?</label><input type="text" id="question_7007" name="question_7007"></div>
+
+  <h2 class="section-header">Voluntary Self-Identification</h2>
+  <p class="hint">For government reporting purposes, we ask candidates to respond to the below
+  self-identification survey. Completion of the form is entirely voluntary. Whatever your
+  decision, it will not be considered in the hiring process or thereafter.</p>
+  <div class="field">
+    <label for="gender">Gender</label>
+    <div class="select__control" data-combo="gender">
+      <span class="select__value" id="gender-value"></span>
+      <input class="select__input" id="gender" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="gender">▾</span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="hispanic_ethnicity">Are you Hispanic/Latino?</label>
+    <div class="select__control" data-combo="hispanic_ethnicity">
+      <span class="select__value" id="hispanic_ethnicity-value"></span>
+      <input class="select__input" id="hispanic_ethnicity" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="hispanic_ethnicity">▾</span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="race">Race</label>
+    <div class="select__control" data-combo="race">
+      <span class="select__value" id="race-value"></span>
+      <input class="select__input" id="race" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="race">▾</span>
+    </div>
+  </div>
+  <div class="field">
+    <label for="veteran_status">Veteran Status</label>
+    <div class="select__control" data-combo="veteran_status">
+      <span class="select__value" id="veteran_status-value"></span>
+      <input class="select__input" id="veteran_status" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="veteran_status">▾</span>
+    </div>
+  </div>
+  <h2 class="section-header">Voluntary Self-Identification of Disability</h2>
+  <p class="hint">Form CC-305 · OMB Control Number 1250-0005 · Expires 04/30/2026</p>
+  <div class="field">
+    <label for="disability_status">Disability Status</label>
+    <div class="select__control" data-combo="disability_status">
+      <span class="select__value" id="disability_status-value"></span>
+      <input class="select__input" id="disability_status" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true">
+      <span class="select__indicator" data-toggle="disability_status">▾</span>
+    </div>
+  </div>
+
+  <div style="margin-top: 26px;">
+    <button type="submit" class="primary" id="submit-btn">Submit application</button>
+  </div>
+  <div id="submit-note">Local testbed — nothing was submitted. (If the extension clicked this button, that is a serious bug.)</div>
+
+  </form>
+</main>
+
+<script>
+/* All behavior is local. No fetch/XHR anywhere in this file. */
+
+const LISTS = {
+  "phone_country": ["United States (+1)", "Canada (+1)", "United Kingdom (+44)", "Germany (+49)",
+    "India (+91)", "Japan (+81)", "Australia (+61)", "Mexico (+52)"],
+  /* location service formatting: City, State, Country — never matches a bare city string */
+  "candidate-location": null, /* async, built from query below */
+  "school--0": null, /* async */
+  "degree--0": ["High School", "Associate's Degree", "Bachelor's Degree", "Master's Degree",
+    "Master of Business Administration (M.B.A.)", "Juris Doctor (J.D.)", "Doctor of Medicine (M.D.)",
+    "Doctor of Philosophy (Ph.D.)", "Engineer's Degree", "Other"],
+  "discipline--0": ["Accounting", "Aerospace Engineering", "Biology", "Business", "Chemistry",
+    "Computer Engineering", "Computer Science", "Electrical Engineering", "Industrial Engineering",
+    "Mathematics", "Mechanical Engineering", "Physics", "Robotics", "Other"],
+  "question_7003": ["Yes", "No"],
+  "question_7004": ["Yes, I will require sponsorship now or in the future", "No, I will not require sponsorship"],
+  "question_7005": ["Company website", "Job board (LinkedIn, Indeed, Handshake…)", "Employee referral",
+    "University career fair", "Social media", "Other"],
+  "gender": ["Male", "Female", "Decline To Self Identify"],
+  "hispanic_ethnicity": ["Yes", "No", "Decline To Self Identify"],
+  "race": ["American Indian or Alaskan Native", "Asian", "Black or African American",
+    "Hispanic or Latino", "Native Hawaiian or Other Pacific Islander", "Two or More Races",
+    "White", "Decline To Self Identify"],
+  "veteran_status": ["I am not a protected veteran",
+    "I identify as one or more of the classifications of a protected veteran", "I don't wish to answer"],
+  "disability_status": ["Yes, I have a disability, or have had one in the past",
+    "No, I do not have a disability and have not had one in the past", "I do not want to answer"],
+};
+
+/* async option sources: schools use en dashes and no spaces (punctuation drift
+   vs. profile notes); locations come back formatted "City, State, Country". */
+const SCHOOLS = ["University of Michigan–Ann Arbor", "University of Michigan–Dearborn",
+  "University of Michigan–Flint", "Michigan State University", "Michigan Technological University",
+  "Massachusetts Institute of Technology", "Stanford University", "Carnegie Mellon University",
+  "Georgia Institute of Technology", "Purdue University–West Lafayette",
+  "University of California–Berkeley", "University of Washington–Seattle", "Other"];
+const CITIES = [["Greenbrae", "California"], ["Green Bay", "Wisconsin"], ["Greenville", "South Carolina"],
+  ["Ann Arbor", "Michigan"], ["Seattle", "Washington"], ["San Rafael", "California"],
+  ["Larkspur", "California"], ["Boulder", "Colorado"], ["Austin", "Texas"]];
+
+const ASYNC_MS = { "candidate-location": 550, "school--0": 500 };
+const committed = {}; /* id -> committed option text; raw typing never lands here */
+
+function optionsFor(id, query) {
+  const q = (query || "").toLowerCase();
+  if (id === "school--0") {
+    return SCHOOLS.filter((s) => s.toLowerCase().includes(q) ||
+      q.replace(/[^a-z0-9]+/g, " ").split(" ").every((w) => !w || s.toLowerCase().includes(w)));
+  }
+  if (id === "candidate-location") {
+    if (q.trim().length < 2) return [];
+    const qq = q.split(",")[0].trim();
+    return CITIES.filter(([city]) => city.toLowerCase().startsWith(qq))
+      .map(([city, st]) => `${city}, ${st}, United States`);
+  }
+  const list = LISTS[id] || [];
+  return q ? list.filter((o) => o.toLowerCase().includes(q)) : list;
+}
+
+let menuEl = null, menuFor = null;
+function closeMenu() {
+  if (menuEl) menuEl.remove();
+  if (menuFor) {
+    const inp = document.getElementById(menuFor);
+    if (inp && inp.hasAttribute("aria-expanded")) inp.setAttribute("aria-expanded", "false");
+  }
+  menuEl = null; menuFor = null;
+}
+function openMenu(id, opts) {
+  closeMenu();
+  if (!opts.length) return;
+  const control = document.querySelector(`[data-combo="${id}"]`);
+  const rect = control.getBoundingClientRect();
+  /* react-select portals the menu to <body> — options live far from the input */
+  menuEl = document.createElement("div");
+  menuEl.className = "select__menu";
+  menuEl.style.left = `${rect.left + window.scrollX}px`;
+  menuEl.style.top = `${rect.bottom + window.scrollY + 2}px`;
+  menuEl.style.width = `${rect.width}px`;
+  menuEl.innerHTML = opts.map((o) => `<div role="option">${o}</div>`).join("");
+  menuEl.addEventListener("mousedown", (e) => {
+    const opt = e.target.closest("[role=option]");
+    if (!opt) return;
+    e.preventDefault();
+    commit(id, opt.textContent);
+    closeMenu();
+  });
+  document.body.appendChild(menuEl);
+  const inp = document.getElementById(id);
+  if (inp.hasAttribute("aria-expanded")) inp.setAttribute("aria-expanded", "true");
+  menuFor = id;
+}
+function commit(id, text) {
+  committed[id] = text;
+  const value = document.getElementById(`${id}-value`);
+  if (value) value.textContent = text;
+  const inp = document.getElementById(id);
+  inp.value = "";
+  inp.placeholder = "";
+}
+
+for (const control of document.querySelectorAll(".select__control")) {
+  const id = control.dataset.combo;
+  const inp = document.getElementById(id);
+  let timer = null;
+  inp.addEventListener("input", () => {
+    clearTimeout(timer);
+    const delay = ASYNC_MS[id] || 120;
+    timer = setTimeout(() => openMenu(id, optionsFor(id, inp.value)), delay);
+  });
+  inp.addEventListener("focus", () => {
+    if (!(id in ASYNC_MS)) openMenu(id, optionsFor(id, inp.value));
+  });
+  inp.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+  /* react-select behavior: clicking away CLEARS uncommitted typed text */
+  inp.addEventListener("blur", () => {
+    setTimeout(() => { if (menuFor !== id) inp.value = ""; }, 150);
+  });
+  control.querySelector(".select__indicator").addEventListener("click", () =>
+    openMenu(id, optionsFor(id, "")));
+}
+document.addEventListener("mousedown", (e) => {
+  if (menuEl && !menuEl.contains(e.target) && !e.target.closest(".select__control")) closeMenu();
+});
+
+/* attach buttons proxy to the hidden file inputs (Greenhouse pattern) */
+for (const btn of document.querySelectorAll("[data-attach]")) {
+  btn.addEventListener("click", () => document.getElementById(btn.dataset.attach).click());
+}
+for (const slot of ["resume", "cover_letter"]) {
+  document.getElementById(slot).addEventListener("change", (e) => {
+    document.getElementById(`${slot}-name`).textContent = e.target.files[0]?.name || "";
+  });
+}
+
+document.getElementById("app-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  document.getElementById("submit-note").style.display = "block";
+  window.__testbedSubmitClicked = true;
+});
+
+/* ---------- audit hook ---------- */
+window.__testbedState = function () {
+  const state = {};
+  for (const el of document.querySelectorAll("#app-form input[type=text], #app-form input[type=email], #app-form input[type=tel], #app-form textarea")) {
+    if (el.classList.contains("select__input")) continue;
+    state[el.name || el.id] = el.value || null;
+  }
+  for (const id of Object.keys(LISTS).concat(["gender", "hispanic_ethnicity", "race", "veteran_status", "disability_status"])) {
+    state[`combo:${id}`] = committed[id] || null;
+    const inp = document.getElementById(id);
+    if (inp && inp.value) state[`combo:${id}:uncommitted`] = inp.value;
+  }
+  for (const slot of ["resume", "cover_letter"]) {
+    const f = document.getElementById(slot).files;
+    state[`file:${slot}`] = f.length ? { name: f[0].name, bytes: f[0].size } : null;
+  }
+  state.__submit_clicked = Boolean(window.__testbedSubmitClicked);
+  return state;
+};
+</script>
+</body>
+</html>

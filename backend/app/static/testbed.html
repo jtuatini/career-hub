@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian Autonomy Labs — Software Engineering Intern (Summer 2027)</title>
+<meta property="og:site_name" content="Meridian Autonomy Labs">
+<style>
+  :root { --ink: #1d2733; --line: #d6dde6; --accent: #0b5fff; --soft: #f4f7fa; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: #fff; }
+  .test-banner { background: #7a1f1f; color: #fff; text-align: center; padding: 6px 12px; font-size: 13px; }
+  header.jobhead { background: var(--soft); border-bottom: 1px solid var(--line); padding: 22px 0; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  .meta { color: #5a6b7d; font-size: 14px; }
+  main { padding: 20px 0 80px; }
+  .jd { border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; margin: 18px 0; font-size: 14px; }
+  .jd h2 { font-size: 16px; margin: 0 0 8px; }
+  .steps { display: flex; gap: 8px; margin: 22px 0 10px; font-size: 13px; }
+  .steps span { padding: 4px 10px; border-radius: 999px; background: var(--soft); border: 1px solid var(--line); }
+  .steps span.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; margin: 18px 0; padding: 14px 18px 18px; }
+  legend { font-weight: 600; padding: 0 6px; }
+  .row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .field { margin: 12px 0 0; flex: 1 1 220px; }
+  .field.full { flex-basis: 100%; }
+  label, .q-label { display: block; font-weight: 600; font-size: 13.5px; margin-bottom: 4px; }
+  .hint { font-weight: 400; color: #5a6b7d; }
+  input[type=text], input[type=email], input[type=tel], input[type=url], input[type=number],
+  input[type=date], input[type=month], input[type=password], select, textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px;
+    font: inherit; background: #fff;
+  }
+  textarea { resize: vertical; }
+  .choices label { font-weight: 400; display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+  .btnrow { display: flex; gap: 12px; margin-top: 26px; align-items: center; }
+  button { font: inherit; padding: 10px 18px; border-radius: 6px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  /* custom widgets */
+  .combo { position: relative; }
+  .combo-btn { width: 100%; text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: #5a6b7d; }
+  .combo-btn.has-value { color: var(--ink); }
+  .listbox { position: absolute; z-index: 30; top: calc(100% + 2px); left: 0; right: 0; max-height: 210px;
+    overflow: auto; background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    box-shadow: 0 8px 22px rgba(20, 34, 50, .14); }
+  .listbox[hidden] { display: none; }
+  .listbox [role=option] { padding: 7px 10px; cursor: pointer; }
+  .listbox [role=option]:hover, .listbox [role=option][aria-selected=true] { background: #e8f0ff; }
+  .honeypot { display: none; }
+  #submit-note { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #103b1a; color: #d9f7e1; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="test-banner">LOCAL TESTBED — this page is served by your own backend, has no form action, and never sends anything anywhere.</div>
+
+<header class="jobhead">
+  <div class="wrap">
+    <h1>Software Engineering Intern — Autonomy Platform (Summer 2027)</h1>
+    <p class="meta">Meridian Autonomy Labs · Ann Arbor, MI (hybrid) · Internship · Posted this week</p>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="jd">
+    <h2>About the role</h2>
+    <p>Meridian Autonomy Labs is hiring a Software Engineering Intern (Autonomy Platform) for
+    Summer 2027 in Ann Arbor, MI.</p>
+    <p>Meridian Autonomy Labs builds perception and controls software for autonomous field robots
+    used in agriculture and infrastructure inspection. Our stack is modern C++20 on the robot
+    (planning, state estimation, sensor drivers) with Python tooling for simulation, data
+    pipelines, and ML evaluation. Interns ship production code: recent interns built a LiDAR
+    ground-segmentation module, cut planner latency 30%, and added CI hardware-in-the-loop tests.</p>
+    <p>We are looking for interns who have strong C++ fundamentals, comfort with data structures
+    and algorithms, and curiosity about robotics. Experience with ROS 2, Eigen, CUDA, Linux,
+    Docker, or embedded targets is a plus. You will pair with a mentor, own a scoped project
+    end-to-end, and present it at our demo day.</p>
+    <p><strong>Qualifications:</strong> pursuing a BS/MS in CS, CE, EE, Robotics, or similar;
+    graduating December 2027 or later; solid C++ or Python; git fluency. Compensation:
+    $42–$50/hr plus housing stipend. Meridian is an equal opportunity employer.</p>
+  </div>
+
+  <div class="steps"><span id="step1-chip" class="on">1 · Your information</span><span id="step2-chip">2 · Role &amp; voluntary questions</span></div>
+
+  <form id="app-form" autocomplete="off" novalidate>
+
+  <!-- ======================= PAGE 1 ======================= -->
+  <div id="page1">
+    <fieldset>
+      <legend>Contact</legend>
+      <div class="row">
+        <div class="field"><label for="first_name">First name *</label><input type="text" id="first_name" name="first_name" required></div>
+        <div class="field"><label for="last_name">Last name *</label><input type="text" id="last_name" name="last_name" required></div>
+        <div class="field"><label for="preferred_name">Preferred name <span class="hint">(optional)</span></label><input type="text" id="preferred_name" name="preferred_name"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="email">Email *</label><input type="email" id="email" name="email" required></div>
+        <div class="field"><label for="email_confirm">Confirm email *</label><input type="email" id="email_confirm" name="email_confirm" required></div>
+        <div class="field"><label for="phone">Phone *</label><input type="tel" id="phone" name="phone" placeholder="+1 (555) 555-5555" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="street">Street address</label><input type="text" id="street" name="street"></div>
+        <div class="field"><label for="city">City *</label><input type="text" id="city" name="city" required></div>
+        <div class="field">
+          <label for="state">State *</label>
+          <select id="state" name="state" required>
+            <option value="">Select…</option>
+            <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option>
+            <option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option>
+            <option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option>
+            <option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option>
+            <option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option>
+            <option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option>
+            <option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option>
+            <option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option>
+            <option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option>
+            <option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option>
+            <option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option>
+            <option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option>
+            <option>Wisconsin</option><option>Wyoming</option><option>District of Columbia</option><option>Puerto Rico</option>
+          </select>
+        </div>
+        <div class="field"><label for="zip">ZIP code</label><input type="text" id="zip" name="zip" inputmode="numeric"></div>
+      </div>
+      <div class="field">
+        <span class="q-label" id="country-label">Country *</span>
+        <div class="combo">
+          <div class="combo-btn" role="combobox" aria-haspopup="listbox" aria-expanded="false"
+               aria-labelledby="country-label" id="country" tabindex="0" data-placeholder="Select a country…">Select a country…</div>
+          <div class="listbox" role="listbox" hidden></div>
+        </div>
+      </div>
+      <!-- honeypot: hidden from humans AND from any well-behaved autofill -->
+      <div class="honeypot"><label for="fax">Fax number</label><input type="text" id="fax" name="fax" tabindex="-1"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Online presence</legend>
+      <div class="row">
+        <div class="field"><label for="linkedin">LinkedIn URL</label><input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/…"></div>
+        <div class="field"><label for="github">GitHub URL</label><input type="url" id="github" name="github" placeholder="https://github.com/…"></div>
+        <div class="field"><label for="portfolio">Portfolio / personal site</label><input type="url" id="portfolio" name="portfolio"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Education</legend>
+      <div class="field">
+        <span class="q-label" id="school-label">School / University *</span>
+        <div class="combo" role="combobox" aria-expanded="false" aria-owns="school-listbox">
+          <input type="text" id="school" name="school" role="combobox" aria-autocomplete="list"
+                 aria-expanded="false" aria-labelledby="school-label" placeholder="Start typing your school…">
+          <div class="listbox" id="school-listbox" role="listbox" hidden></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="degree">Degree *</label>
+          <select id="degree" name="degree" required>
+            <option value="">Select…</option>
+            <option>High school diploma</option>
+            <option>Associate's degree</option>
+            <option>Bachelor's degree</option>
+            <option>Master's degree</option>
+            <option>Doctorate</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="q-label" id="major-label">Major / field of study *</span>
+          <div class="combo" role="combobox" aria-expanded="false" aria-owns="major-listbox">
+            <input type="text" id="major" name="major" role="combobox" aria-autocomplete="list"
+                   aria-expanded="false" aria-labelledby="major-label" placeholder="Start typing…">
+            <div class="listbox" id="major-listbox" role="listbox" hidden></div>
+          </div>
+        </div>
+        <div class="field"><label for="minor">Minor <span class="hint">(optional)</span></label><input type="text" id="minor" name="minor"></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="grad_date">Expected graduation *</label><input type="month" id="grad_date" name="grad_date" required></div>
+        <div class="field"><label for="gpa">GPA <span class="hint">(4.0 scale)</span></label><input type="number" id="gpa" name="gpa" min="0" max="4" step="0.01"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Documents</legend>
+      <div class="field"><label for="resume">Resume / CV *</label><input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx"></div>
+      <div class="field"><label for="cover_letter">Cover letter <span class="hint">(optional)</span></label><input type="file" id="cover_letter" name="cover_letter" accept=".pdf,.doc,.docx"></div>
+      <div class="field"><label for="transcript">Unofficial transcript <span class="hint">(optional)</span></label><input type="file" id="transcript" name="transcript" accept=".pdf"></div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Work eligibility &amp; logistics</legend>
+      <fieldset class="choices">
+        <legend class="q-label">Are you legally authorized to work in the United States? *</legend>
+        <label><input type="radio" name="work_auth" value="yes"> Yes</label>
+        <label><input type="radio" name="work_auth" value="no"> No</label>
+      </fieldset>
+      <fieldset class="choices">
+        <legend class="q-label">Will you now or in the future require sponsorship for employment visa status? *</legend>
+        <label><input type="radio" name="sponsorship" value="yes"> Yes</label>
+        <label><input type="radio" name="sponsorship" value="no"> No</label>
+      </fieldset>
+      <fieldset class="choices">
+        <legend class="q-label">Are you at least 18 years of age? *</legend>
+        <label><input type="radio" name="age18" value="yes"> Yes</label>
+        <label><input type="radio" name="age18" value="no"> No</label>
+      </fieldset>
+      <fieldset class="choices">
+        <legend class="q-label">Have you previously been employed by Meridian Autonomy Labs?</legend>
+        <label><input type="radio" name="prev_employed" value="yes"> Yes</label>
+        <label><input type="radio" name="prev_employed" value="no"> No</label>
+      </fieldset>
+      <fieldset class="choices">
+        <legend class="q-label">Are you willing to relocate to Ann Arbor, MI for the internship? *</legend>
+        <label><input type="radio" name="relocate" value="yes"> Yes</label>
+        <label><input type="radio" name="relocate" value="maybe"> Maybe, depending on housing support</label>
+        <label><input type="radio" name="relocate" value="no"> No</label>
+      </fieldset>
+      <div class="row">
+        <div class="field"><label for="start_date">Earliest start date *</label><input type="date" id="start_date" name="start_date"></div>
+        <div class="field"><label for="hours">Hours available per week *</label><input type="number" id="hours" name="hours" min="10" max="40"></div>
+        <div class="field"><label for="salary">Desired hourly rate <span class="hint">(USD)</span></label><input type="text" id="salary" name="salary" placeholder="$"></div>
+      </div>
+      <div class="field">
+        <label for="referral_source">How did you hear about this position? *</label>
+        <select id="referral_source" name="referral_source">
+          <option value="">Select…</option>
+          <option>University career fair</option>
+          <option>Handshake</option>
+          <option>LinkedIn</option>
+          <option>Company website</option>
+          <option>Referral from a current employee</option>
+          <option>Hackathon or competition</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label for="referral_name">If referred by an employee, who? <span class="hint">(optional)</span></label><input type="text" id="referral_name" name="referral_name"></div>
+      <div class="choices">
+        <label><input type="checkbox" name="privacy_consent" id="privacy_consent"> I have read and agree to the candidate privacy policy. *</label>
+        <label><input type="checkbox" name="talent_pool" id="talent_pool"> Keep my profile on file for future roles and email me about openings.</label>
+      </div>
+      <!-- fields the bot must ignore -->
+      <div class="field"><label for="account_pw">Create an application account password <span class="hint">(testbed trap — autofill must skip password fields)</span></label><input type="password" id="account_pw" name="account_pw"></div>
+    </fieldset>
+
+    <div class="btnrow">
+      <button type="button" id="save-draft">Save draft</button>
+      <button type="button" class="primary" id="continue-btn">Continue</button>
+    </div>
+  </div>
+
+  <!-- ======================= PAGE 2 ======================= -->
+  <div id="page2" hidden>
+    <fieldset>
+      <legend>Role questions</legend>
+      <div class="field full">
+        <label for="q_why">Why do you want to intern at Meridian Autonomy Labs specifically? *</label>
+        <textarea id="q_why" name="q_why" rows="5" placeholder="A few sentences is plenty."></textarea>
+      </div>
+      <div class="field full">
+        <label for="q_project">Describe a technical project you're proud of. What was hard about it, and what did you actually build? *</label>
+        <textarea id="q_project" name="q_project" rows="6"></textarea>
+      </div>
+      <div class="field full">
+        <label for="q_essay">In 250–400 words, tell us about a time you had to learn something difficult on your own. What was your approach, where did you get stuck, and what changed in how you learn? *</label>
+        <textarea id="q_essay" name="q_essay" rows="10"></textarea>
+      </div>
+      <div class="field full">
+        <label for="q_robot">What excites you about robotics, in one sentence?</label>
+        <input type="text" id="q_robot" name="q_robot" maxlength="200">
+      </div>
+      <div class="field full">
+        <label for="q_anything">Anything else you'd like us to know? <span class="hint">(optional)</span></label>
+        <textarea id="q_anything" name="q_anything" rows="3"></textarea>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="fav_lang">Strongest programming language *</label>
+          <select id="fav_lang" name="fav_lang">
+            <option value="">Select…</option>
+            <option>C++</option><option>Python</option><option>Java</option><option>JavaScript / TypeScript</option>
+            <option>Go</option><option>Rust</option><option>C</option><option>MATLAB</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cpp_years">Years of C++ experience *</label>
+          <select id="cpp_years" name="cpp_years">
+            <option value="">Select…</option>
+            <option>None</option><option>Less than 1 year</option><option>1-2 years</option>
+            <option>2-4 years</option><option>4+ years</option>
+          </select>
+        </div>
+      </div>
+      <fieldset class="choices">
+        <legend class="q-label">Which working style fits you best? *</legend>
+        <label><input type="radio" name="team_style" value="solo"> Deep solo work with async check-ins</label>
+        <label><input type="radio" name="team_style" value="pair"> Frequent pairing and design discussion</label>
+        <label><input type="radio" name="team_style" value="mixed"> A mix, depending on the problem</label>
+      </fieldset>
+      <div class="field">
+        <span class="q-label" id="tz-label">Time zone you'll work from *</span>
+        <div class="combo">
+          <div class="combo-btn" role="combobox" aria-haspopup="listbox" aria-expanded="false"
+               aria-labelledby="tz-label" id="timezone" tabindex="0" data-placeholder="Select a time zone…">Select a time zone…</div>
+          <div class="listbox" role="listbox" hidden></div>
+        </div>
+      </div>
+      <fieldset class="choices">
+        <legend class="q-label">Which of these have you used? <span class="hint">(check all that apply — left for the human on purpose)</span></legend>
+        <label><input type="checkbox" name="tech" value="ros2"> ROS 2</label>
+        <label><input type="checkbox" name="tech" value="eigen"> Eigen</label>
+        <label><input type="checkbox" name="tech" value="cuda"> CUDA</label>
+        <label><input type="checkbox" name="tech" value="docker"> Docker</label>
+        <label><input type="checkbox" name="tech" value="linux"> Linux</label>
+        <label><input type="checkbox" name="tech" value="pytorch"> PyTorch</label>
+      </fieldset>
+      <div class="field">
+        <label for="contact_pref">Preferred ways for us to contact you <span class="hint">(hold ⌘/Ctrl to select several)</span></label>
+        <select id="contact_pref" name="contact_pref" multiple size="4">
+          <option>Email</option><option>Phone call</option><option>Text message</option><option>LinkedIn message</option>
+        </select>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Voluntary self-identification <span class="hint">(EEO — answering is optional and never affects your application)</span></legend>
+      <div class="row">
+        <div class="field">
+          <label for="eeo_gender">Gender</label>
+          <select id="eeo_gender" name="eeo_gender">
+            <option value="">Select…</option>
+            <option>Male</option><option>Female</option><option>Non-binary</option>
+            <option>I prefer to self-describe</option><option>I prefer not to say</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="eeo_pronouns">Pronouns <span class="hint">(optional)</span></label>
+          <select id="eeo_pronouns" name="eeo_pronouns">
+            <option value="">Select…</option>
+            <option>he/him</option><option>she/her</option><option>they/them</option>
+            <option>Other</option><option>I prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="eeo_race">Race / ethnicity</label>
+          <select id="eeo_race" name="eeo_race">
+            <option value="">Select…</option>
+            <option>American Indian or Alaska Native</option>
+            <option>Asian</option>
+            <option>Black or African American</option>
+            <option>Hispanic or Latino</option>
+            <option>Native Hawaiian or Other Pacific Islander</option>
+            <option>White</option>
+            <option>Two or more races</option>
+            <option>I prefer not to say</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="eeo_veteran">Veteran status</label>
+          <select id="eeo_veteran" name="eeo_veteran">
+            <option value="">Select…</option>
+            <option>I am not a protected veteran</option>
+            <option>I identify as one or more of the classifications of a protected veteran</option>
+            <option>I prefer not to say</option>
+          </select>
+        </div>
+      </div>
+      <fieldset class="choices">
+        <legend class="q-label">Disability status</legend>
+        <label><input type="radio" name="eeo_disability" value="yes"> Yes, I have a disability (or previously had one)</label>
+        <label><input type="radio" name="eeo_disability" value="no"> No, I do not have a disability</label>
+        <label><input type="radio" name="eeo_disability" value="decline"> I prefer not to say</label>
+      </fieldset>
+    </fieldset>
+
+    <div class="choices">
+      <label><input type="checkbox" name="certify" id="certify"> I certify that my answers are true and complete to the best of my knowledge. *</label>
+    </div>
+
+    <div class="btnrow">
+      <button type="button" id="back-btn">Back</button>
+      <button type="submit" class="primary" id="submit-btn">Submit application</button>
+    </div>
+    <div id="submit-note">This is the local testbed — nothing was submitted, nothing left your machine. (If the extension clicked this button, that is a serious bug: it must never click Submit.)</div>
+  </div>
+
+  </form>
+</main>
+
+<script>
+/* All behavior is local. No fetch/XHR anywhere in this file. */
+
+/* ---------- two-page wizard ---------- */
+const page1 = document.getElementById("page1");
+const page2 = document.getElementById("page2");
+document.getElementById("continue-btn").addEventListener("click", () => {
+  page1.hidden = true;
+  page2.hidden = false;
+  document.getElementById("step1-chip").classList.remove("on");
+  document.getElementById("step2-chip").classList.add("on");
+  window.scrollTo({ top: 0 });
+});
+document.getElementById("back-btn").addEventListener("click", () => {
+  page2.hidden = true;
+  page1.hidden = false;
+  document.getElementById("step2-chip").classList.remove("on");
+  document.getElementById("step1-chip").classList.add("on");
+  window.scrollTo({ top: 0 });
+});
+document.getElementById("save-draft").addEventListener("click", () => {
+  document.getElementById("save-draft").textContent = "Draft saved ✓ (locally, nowhere else)";
+});
+document.getElementById("app-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  document.getElementById("submit-note").style.display = "block";
+  window.__testbedSubmitClicked = true;
+});
+
+/* ---------- button-style comboboxes (Workday-shaped) ---------- */
+const COUNTRIES = ["United States", "Canada", "Mexico", "United Kingdom", "Germany", "France",
+  "India", "China", "Japan", "South Korea", "Australia", "New Zealand", "Brazil", "Nigeria", "Other"];
+const TIMEZONES = ["Eastern Time (US & Canada)", "Central Time (US & Canada)",
+  "Mountain Time (US & Canada)", "Pacific Time (US & Canada)", "Alaska", "Hawaii", "Other / non-US"];
+
+function buttonCombo(id, options) {
+  const btn = document.getElementById(id);
+  const list = btn.parentElement.querySelector("[role=listbox]");
+  list.innerHTML = options.map((o) => `<div role="option">${o}</div>`).join("");
+  const close = () => { list.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+  btn.addEventListener("click", () => {
+    const opening = list.hidden;
+    document.querySelectorAll(".listbox").forEach((l) => { l.hidden = true; });
+    list.hidden = !opening;
+    btn.setAttribute("aria-expanded", String(opening));
+  });
+  btn.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  list.addEventListener("mousedown", (e) => {
+    const opt = e.target.closest("[role=option]");
+    if (!opt) return;
+    btn.textContent = opt.textContent;
+    btn.classList.add("has-value");
+    btn.dataset.value = opt.textContent;
+    close();
+  });
+  document.addEventListener("click", (e) => { if (!btn.parentElement.contains(e.target)) close(); });
+}
+buttonCombo("country", COUNTRIES);
+buttonCombo("timezone", TIMEZONES);
+
+/* ---------- input-style autocomplete comboboxes (react-select-shaped) ---------- */
+const SCHOOLS = ["University of Michigan - Ann Arbor", "University of Michigan - Dearborn",
+  "Michigan State University", "Michigan Technological University", "Massachusetts Institute of Technology",
+  "Stanford University", "Carnegie Mellon University", "Georgia Institute of Technology",
+  "University of Illinois Urbana-Champaign", "Purdue University", "University of California, Berkeley",
+  "University of Washington", "Wayne State University", "Other"];
+const MAJORS = ["Computer Science", "Computer Engineering", "Electrical Engineering",
+  "Software Engineering", "Robotics", "Data Science", "Mechanical Engineering",
+  "Aerospace Engineering", "Mathematics", "Physics", "Other"];
+
+function inputCombo(id, options, asyncDelayMs) {
+  const input = document.getElementById(id);
+  const list = document.getElementById(id + "-listbox");
+  const wrapper = input.closest("[role=combobox]");
+  let timer = null;
+  const close = () => {
+    list.hidden = true;
+    input.setAttribute("aria-expanded", "false");
+    wrapper.setAttribute("aria-expanded", "false");
+  };
+  const render = (q) => {
+    const matches = options.filter((o) => o.toLowerCase().includes(q.toLowerCase()));
+    list.innerHTML = matches.map((o) => `<div role="option">${o}</div>`).join("");
+    list.hidden = matches.length === 0;
+    input.setAttribute("aria-expanded", String(matches.length > 0));
+    wrapper.setAttribute("aria-expanded", String(matches.length > 0));
+  };
+  input.addEventListener("input", () => {
+    clearTimeout(timer);
+    /* options arrive asynchronously, like a school-search backend */
+    timer = setTimeout(() => render(input.value), asyncDelayMs);
+  });
+  input.addEventListener("click", () => render(input.value));
+  input.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  list.addEventListener("mousedown", (e) => {
+    const opt = e.target.closest("[role=option]");
+    if (!opt) return;
+    input.value = opt.textContent;
+    input.dataset.committed = opt.textContent; /* raw typing never sets this */
+    close();
+  });
+  document.addEventListener("click", (e) => { if (!wrapper.contains(e.target)) close(); });
+}
+inputCombo("school", SCHOOLS, 400);
+inputCombo("major", MAJORS, 150);
+
+/* ---------- audit hook: full state as JSON (read by the test harness) ---------- */
+window.__testbedState = function () {
+  const form = document.getElementById("app-form");
+  const state = {};
+  for (const el of form.querySelectorAll("input, select, textarea")) {
+    const key = el.name || el.id;
+    if (!key) continue;
+    if (el.type === "radio") {
+      if (el.checked) state[key] = el.value;
+      else state[key] = state[key] ?? null;
+    } else if (el.type === "checkbox") {
+      if (el.name === "tech") {
+        state.tech = state.tech || [];
+        if (el.checked) state.tech.push(el.value);
+      } else state[key] = el.checked;
+    } else if (el.type === "file") {
+      state[key] = el.files.length ? { name: el.files[0].name, bytes: el.files[0].size } : null;
+    } else if (el.multiple) {
+      state[key] = [...el.selectedOptions].map((o) => o.textContent);
+    } else {
+      state[key] = el.value || null;
+    }
+  }
+  for (const id of ["country", "timezone"]) {
+    state[id] = document.getElementById(id).dataset.value || null;
+  }
+  for (const id of ["school", "major"]) {
+    state[id + "_committed"] = document.getElementById(id).dataset.committed || null;
+  }
+  state.__submit_clicked = Boolean(window.__testbedSubmitClicked);
+  state.__page = page1.hidden ? 2 : 1;
+  return state;
+};
+</script>
+</body>
+</html>

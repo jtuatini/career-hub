@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Application Copilot — Options</title>
+  <style>
+    body { font: 14px/1.5 -apple-system, system-ui, sans-serif; margin: 16px; width: 360px; }
+    input { width: 100%; padding: 6px; font: inherit; }
+    button { margin-top: 10px; padding: 6px 14px; font: inherit; }
+    #status { margin-top: 10px; color: #666; }
+  </style></head>
+  <body>
+    <h2>Application Copilot</h2>
+    <label>API token (Profile tab → Extension Access)
+      <input id="token" type="password" autocomplete="off">
+    </label>
+    <button id="save">Save</button>
+    <button id="app">Open the app</button>
+    <div id="status"></div>
+    <script src="options.js"></script>
+  </body>
+</html>

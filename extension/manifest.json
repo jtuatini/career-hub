@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Application Copilot",
+  "description": "One-click apply: reads the posting, tailors your resume and cover letter locally, and fills the application while you watch. Never submits.",
+  "version": "0.3.0",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Application Copilot",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "options_ui": { "page": "options.html", "open_in_tab": false },
+  "permissions": ["activeTab", "scripting", "storage", "alarms", "tabs", "webNavigation"],
+  "host_permissions": ["http://127.0.0.1:8321/*"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"]
+}

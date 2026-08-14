@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Systems Test Engineering Intern - Northwind Dynamics Careers</title>
+<meta property="og:site_name" content="Northwind Dynamics">
+<style>
+  /* Workday-clone testbed: same-URL SPA wizard. Steps swap via childList
+     replacement behind a loading spinner; Next validates required fields and
+     BLOCKS with an error banner; widgets are listbox buttons, searchbox
+     prompts ([data-automation-id=promptOption]), and MM/DD/YYYY date-segment
+     spinners. Labels are aria-labelledby divs, never <label for>. Fully
+     local: no form action, no fetch. */
+  :root { --ink: #212b36; --line: #c9d2da; --accent: #005cb9; --soft: #f4f6f8; --err: #b42318; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--soft); }
+  .test-banner { background: #7a1f1f; color: #fff; text-align: center; padding: 6px 12px; font-size: 13px; }
+  header.chrome { background: #002b56; color: #fff; padding: 14px 0; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 0 20px; }
+  main { padding: 22px 0 90px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 20px 24px; margin: 14px 0; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 19px; margin: 0 0 14px; }
+  .progress { display: flex; gap: 6px; margin: 14px 0; font-size: 12.5px; flex-wrap: wrap; }
+  .progress span { padding: 4px 9px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+  .progress span.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .wd-label { font-weight: 600; font-size: 13.5px; margin: 14px 0 4px; }
+  .wd-label abbr { color: var(--err); text-decoration: none; margin-left: 2px; }
+  input[type=text], input[type=email], input[type=password], textarea {
+    width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; font: inherit; background: #fff;
+  }
+  .wd-listbtn { width: 100%; text-align: left; padding: 9px 10px; border: 1px solid var(--line); border-radius: 4px;
+    background: #fff; color: #62717f; font: inherit; cursor: pointer; }
+  .wd-listbtn.has-value { color: var(--ink); }
+  .wd-menu { position: absolute; z-index: 50; background: #fff; border: 1px solid var(--line); border-radius: 4px;
+    box-shadow: 0 8px 22px rgba(20,34,50,.18); max-height: 230px; overflow: auto; min-width: 240px; }
+  .wd-menu [role=option], .wd-menu [data-automation-id=promptOption] { padding: 8px 12px; cursor: pointer; }
+  .wd-menu [role=option]:hover, .wd-menu [data-automation-id=promptOption]:hover { background: #e8f1fb; }
+  .multi { border: 1px solid var(--line); border-radius: 4px; background: #fff; padding: 4px 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .multi input { border: none !important; flex: 1; min-width: 120px; padding: 6px 4px !important; outline: none; }
+  .pill { background: #e8f1fb; border: 1px solid #b6d3f2; border-radius: 999px; padding: 2px 10px; font-size: 13px; }
+  .date-wrap { display: flex; gap: 6px; align-items: center; }
+  .date-wrap input { width: 64px; text-align: center; }
+  .date-wrap .yr { width: 84px; }
+  .radio-row label { display: flex; gap: 8px; align-items: center; font-weight: 400; margin: 4px 0; }
+  fieldset { border: 1px solid var(--line); border-radius: 6px; margin: 14px 0 0; padding: 8px 14px 12px; }
+  legend { font-weight: 600; font-size: 13.5px; padding: 0 6px; }
+  .btnrow { display: flex; gap: 12px; margin-top: 24px; }
+  .btnrow button { font: inherit; padding: 10px 20px; border-radius: 4px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .btnrow button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .error-banner { background: #fdecea; border: 1px solid var(--err); color: var(--err); border-radius: 6px;
+    padding: 10px 14px; margin: 0 0 14px; font-size: 13.5px; }
+  .spinner { display: flex; align-items: center; gap: 12px; padding: 60px 0; justify-content: center; color: #62717f; }
+  .spinner .ring { width: 28px; height: 28px; border: 3px solid var(--line); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .upload-zone { border: 1px dashed var(--line); border-radius: 6px; padding: 16px; text-align: center; }
+  .upload-zone .fname { color: var(--accent); font-size: 13px; display: block; margin-top: 6px; }
+  .hidden-file { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; }
+  .review dt { font-weight: 600; margin-top: 8px; } .review dd { margin: 0; color: #46525e; }
+  #submit-note { display: none; margin-top: 14px; padding: 12px 16px; border-radius: 8px; background: #103b1a; color: #d9f7e1; }
+</style>
+</head>
+<body>
+<div class="test-banner">LOCAL TESTBED (Workday-style) — served by your own backend; nothing is ever sent anywhere.</div>
+<header class="chrome"><div class="wrap"><strong>Northwind Dynamics</strong> · Careers</div></header>
+
+<main class="wrap">
+  <div class="progress" id="progress" hidden></div>
+  <div id="stage"></div>
+</main>
+
+<script>
+/* All behavior is local. No fetch/XHR anywhere in this file. */
+
+const S = {}; /* application state, survives step swaps */
+window.__testbedSubmitClicked = false;
+
+const STEPS = ["Posting", "Account", "My Information", "My Experience", "Application Questions", "Voluntary Disclosures", "Review"];
+let stepIndex = 0;
+
+const LISTS = {
+  country: ["United States of America", "Canada", "Mexico", "United Kingdom", "Germany", "India", "Japan", "Australia"],
+  countryRegion: ["Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut",
+    "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas",
+    "Kentucky", "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+    "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+    "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah",
+    "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming", "District of Columbia"],
+  phoneDeviceType: ["Mobile", "Landline"],
+  degree: ["High School Diploma/GED", "Associate's", "Bachelor's (BA/BS)", "Master's (MA/MS/MBA)",
+    "Doctorate (PhD/JD/MD)", "Professional Certificate", "No Degree"],
+  workAuth: ["Yes, I am legally authorized to work in the United States",
+    "No, I am not legally authorized to work in the United States"],
+  sponsorship: ["Yes, I will require sponsorship now or in the future",
+    "No, I will not require sponsorship"],
+  ethnicity: ["American Indian or Alaska Native (United States of America)",
+    "Asian (United States of America)", "Black or African American (United States of America)",
+    "Hispanic or Latino (United States of America)",
+    "Native Hawaiian or Other Pacific Islander (United States of America)",
+    "Two or More Races (United States of America)", "White (United States of America)",
+    "Decline to Identify (United States of America)"],
+  genderWd: ["Male", "Female", "Decline to Identify"],
+  veteranWd: ["I am not a protected veteran",
+    "I identify as one or more of the classifications of a protected veteran", "I do not wish to answer"],
+};
+const PROMPTS = {
+  source: ["Company Website", "Employee Referral", "Indeed", "LinkedIn", "Handshake", "Glassdoor",
+    "University Career Fair", "Search Engine", "Social Media", "Other"],
+  phoneCode: ["United States of America (+1)", "Canada (+1)", "United Kingdom (+44)", "Germany (+49)",
+    "India (+91)", "Japan (+81)", "Australia (+61)"],
+  school: ["University of Michigan–Ann Arbor", "University of Michigan–Dearborn", "Michigan State University",
+    "Michigan Technological University", "Massachusetts Institute of Technology", "Stanford University",
+    "Carnegie Mellon University", "Georgia Institute of Technology", "Purdue University–West Lafayette",
+    "University of Washington–Seattle", "Other"],
+  fieldOfStudy: ["Aerospace Engineering", "Computer Engineering", "Computer Science",
+    "Electrical Engineering", "Mechanical Engineering", "Robotics", "Systems Engineering", "Other"],
+};
+
+/* ---------- tiny helpers ---------- */
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const val = (k) => S[k] || "";
+
+function textField(k, label, req, auto, type) {
+  return `<div class="wd-label" id="lbl-${k}">${label}${req ? "<abbr>*</abbr>" : ""}</div>
+    <input type="${type || "text"}" data-k="${k}" data-automation-id="${auto}" aria-labelledby="lbl-${k}" value="${esc(val(k))}">`;
+}
+function listBtn(k, label, req, auto) {
+  const v = val(k);
+  return `<div class="wd-label" id="lbl-${k}">${label}${req ? "<abbr>*</abbr>" : ""}</div>
+    <div style="position:relative">
+      <button type="button" class="wd-listbtn${v ? " has-value" : ""}" data-list="${k}"
+        data-automation-id="${auto}" aria-haspopup="listbox" aria-labelledby="lbl-${k}">${esc(v) || "Select One"}</button>
+    </div>`;
+}
+function searchMulti(k, label, req, prompts) {
+  const pills = (S[k] ? [S[k]] : []).map((p) => `<span class="pill">${esc(p)}</span>`).join("");
+  return `<div class="wd-label" id="lbl-${k}">${label}${req ? "<abbr>*</abbr>" : ""}</div>
+    <div class="multi" data-automation-id="multiSelectContainer">
+      <ul data-automation-id="selectedItemList" style="display:contents;margin:0;padding:0;list-style:none">${pills}</ul>
+      <input data-prompt="${k}" data-prompts="${prompts}" data-automation-id="searchBox" aria-labelledby="lbl-${k}" placeholder="Search">
+    </div>`;
+}
+function dateSegs(k, label, req, withDay) {
+  return `<div class="wd-label" id="lbl-${k}">${label}${req ? "<abbr>*</abbr>" : ""}</div>
+    <div class="date-wrap" aria-labelledby="lbl-${k}">
+      <input data-k="${k}.month" data-automation-id="dateSectionMonth-input" aria-label="Month" placeholder="MM" value="${esc(val(k + ".month"))}">
+      ${withDay ? `<span>/</span><input data-k="${k}.day" data-automation-id="dateSectionDay-input" aria-label="Day" placeholder="DD" value="${esc(val(k + ".day"))}">` : ""}
+      <span>/</span>
+      <input class="yr" data-k="${k}.year" data-automation-id="dateSectionYear-input" aria-label="Year" placeholder="YYYY" value="${esc(val(k + ".year"))}">
+    </div>`;
+}
+function radioGroup(k, legend, req, options) {
+  return `<fieldset class="radio-row"><legend>${legend}${req ? " *" : ""}</legend>` +
+    options.map((o) => `<label><input type="radio" name="${k}" value="${esc(o)}"${S[k] === o ? " checked" : ""}> ${esc(o)}</label>`).join("") +
+    `</fieldset>`;
+}
+
+/* ---------- step renderers ---------- */
+const RENDER = {
+  0: () => `
+    <div class="card">
+      <h1>Systems Test Engineering Intern (Summer 2027)</h1>
+      <p style="color:#62717f">Seattle, WA · Internship · R-20771</p>
+      <p>Northwind Dynamics builds autonomous survey vessels for offshore wind farms. As a Systems
+      Test Engineering Intern you will write Python and C++ test automation against real vessel
+      hardware: telemetry replay harnesses, RF link characterization scripts, and CI gates for the
+      navigation stack. Interns own a test rig end-to-end and present findings to the controls team.</p>
+      <p><strong>Qualifications:</strong> pursuing an engineering degree; strong C++ or Python;
+      hands-on instinct with hardware and instrumentation. $41–$48/hr.</p>
+      <div class="btnrow"><button type="button" class="primary" data-automation-id="adventureButton" id="apply-btn">Apply</button></div>
+    </div>`,
+  1: () => `
+    <div class="card">
+      <h2>Sign In / Create Account</h2>
+      <p style="color:#62717f;font-size:13.5px">Create an account to apply. (Local testbed — any password works and is never sent anywhere.)</p>
+      ${textField("email", "Email Address", true, "email", "email")}
+      ${textField("password", "Password", true, "password", "password")}
+      ${textField("verifyPassword", "Verify New Password", true, "verifyPassword", "password")}
+      <div class="btnrow"><button type="button" class="primary" data-automation-id="createAccountSubmitButton" id="create-account">Create Account</button></div>
+    </div>`,
+  2: () => `
+    <div class="card">
+      <h2>My Information</h2>
+      ${searchMulti("source", "How Did You Hear About Us?", true, "source")}
+      ${radioGroup("previousWorker", "Have you previously worked for Northwind Dynamics?", true, ["Yes", "No"])}
+      ${listBtn("country", "Country", true, "countryDropdown")}
+      ${textField("firstName", "First Name", true, "legalNameSection_firstName")}
+      ${textField("lastName", "Last Name", true, "legalNameSection_lastName")}
+      ${textField("addressLine1", "Address Line 1", true, "addressSection_addressLine1")}
+      ${textField("city", "City", true, "addressSection_city")}
+      ${listBtn("countryRegion", "State", true, "addressSection_countryRegion")}
+      ${textField("postalCode", "Postal Code", true, "addressSection_postalCode")}
+      ${listBtn("phoneDeviceType", "Phone Device Type", true, "phone-device-type")}
+      ${searchMulti("phoneCode", "Country Phone Code", false, "phoneCode")}
+      ${textField("phoneNumber", "Phone Number", true, "phone-number")}
+      ${navRow()}
+    </div>`,
+  3: () => `
+    <div class="card">
+      <h2>My Experience</h2>
+      <h3>Work Experience 1</h3>
+      ${textField("jobTitle", "Job Title", true, "jobTitle")}
+      ${textField("company", "Company", true, "company")}
+      ${dateSegs("workFrom", "From", true, false)}
+      ${dateSegs("workTo", "To (leave blank if current)", false, false)}
+      <h3>Education 1</h3>
+      ${searchMulti("school", "School or University", true, "school")}
+      ${listBtn("degree", "Degree", true, "degree")}
+      ${searchMulti("fieldOfStudy", "Field of Study", false, "fieldOfStudy")}
+      ${textField("gpa", "Overall Result (GPA)", false, "gpa")}
+      ${dateSegs("eduTo", "Expected graduation", true, false)}
+      <h3>Resume/CV</h3>
+      <div class="upload-zone" id="drop-zone">
+        <button type="button" id="select-files">Select files</button>
+        <span class="hint" style="color:#62717f">DOC, DOCX, PDF, TXT (5MB)</span>
+        <span class="fname" id="resume-fname">${S.resumeFile ? esc(S.resumeFile.name) : ""}</span>
+        <input type="file" class="hidden-file" id="resumeUpload" data-automation-id="file-upload-input-ref" accept=".pdf,.doc,.docx,.txt">
+      </div>
+      ${navRow()}
+    </div>`,
+  4: () => `
+    <div class="card">
+      <h2>Application Questions</h2>
+      ${listBtn("workAuth", "Are you legally authorized to work in the United States?", true, "workAuthDropdown")}
+      ${listBtn("sponsorship", "Will you now or in the future require sponsorship for employment visa status?", true, "sponsorshipDropdown")}
+      ${radioGroup("age18", "Are you at least 18 years of age?", true, ["Yes", "No"])}
+      ${textField("salary", "What are your salary expectations?", false, "salaryExpectations")}
+      ${dateSegs("startDate", "What date are you available to start?", false, true)}
+      ${navRow()}
+    </div>`,
+  5: () => `
+    <div class="card">
+      <h2>Voluntary Disclosures</h2>
+      <p style="color:#62717f;font-size:13.5px">The following data is for federal census purposes
+      only and will not be used in any aspect of the selection process. Submission is entirely
+      voluntary — every question offers a decline option.</p>
+      ${listBtn("ethnicity", "Ethnicity", true, "ethnicityDropdown")}
+      ${listBtn("genderWd", "Gender", true, "genderDropdown")}
+      ${listBtn("veteranWd", "Veteran Status", true, "veteranStatusDropdown")}
+      <fieldset class="radio-row"><legend>Terms and Conditions *</legend>
+        <label><input type="checkbox" id="terms" ${S.terms ? "checked" : ""}> Yes, I have read and consent to the terms and conditions</label>
+      </fieldset>
+      ${navRow()}
+    </div>`,
+  6: () => `
+    <div class="card review">
+      <h2>Review</h2>
+      <dl>${Object.entries(S).filter(([k]) => !["password", "verifyPassword"].includes(k))
+        .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(typeof v === "object" && v ? v.name || JSON.stringify(v) : v)}</dd>`).join("")}</dl>
+      <div class="btnrow">
+        <button type="button" data-automation-id="bottom-navigation-back-button" id="back-btn">Back</button>
+        <button type="button" class="primary" data-automation-id="bottom-navigation-next-button" id="submit-btn">Submit</button>
+      </div>
+      <div id="submit-note">Local testbed — nothing was submitted. (If the extension clicked Submit, that is a serious bug.)</div>
+    </div>`,
+};
+
+function navRow() {
+  return `<div class="btnrow">
+    <button type="button" data-automation-id="bottom-navigation-back-button" id="back-btn">Back</button>
+    <button type="button" class="primary" data-automation-id="bottom-navigation-next-button" id="next-btn">Save and Continue</button>
+  </div>`;
+}
+
+/* required keys per step (validation blocks Next, Workday-style) */
+const REQUIRED = {
+  1: ["email", "password", "verifyPassword"],
+  2: ["source", "previousWorker", "country", "firstName", "lastName", "addressLine1", "city",
+      "countryRegion", "postalCode", "phoneDeviceType", "phoneNumber"],
+  3: ["jobTitle", "company", "workFrom.month", "workFrom.year", "school", "degree",
+      "eduTo.year", "resumeFile"],
+  4: ["workAuth", "sponsorship", "age18"],
+  5: ["ethnicity", "genderWd", "veteranWd", "terms"],
+};
+const FIELD_NAMES = {
+  "source": "How Did You Hear About Us", "previousWorker": "Previously worked for Northwind",
+  "country": "Country", "firstName": "First Name", "lastName": "Last Name",
+  "addressLine1": "Address Line 1", "city": "City", "countryRegion": "State",
+  "postalCode": "Postal Code", "phoneDeviceType": "Phone Device Type", "phoneNumber": "Phone Number",
+  "jobTitle": "Job Title", "company": "Company", "workFrom.month": "Work From (month)",
+  "workFrom.year": "Work From (year)", "school": "School or University", "degree": "Degree",
+  "eduTo.year": "Expected graduation (year)", "resumeFile": "Resume/CV",
+  "workAuth": "Work authorization", "sponsorship": "Sponsorship", "age18": "18 or older",
+  "ethnicity": "Ethnicity", "genderWd": "Gender", "veteranWd": "Veteran Status",
+  "terms": "Terms and Conditions", "email": "Email Address", "password": "Password",
+  "verifyPassword": "Verify New Password",
+};
+
+const stage = document.getElementById("stage");
+const progress = document.getElementById("progress");
+let menuEl = null;
+
+function renderProgress() {
+  if (stepIndex < 2) { progress.hidden = true; return; }
+  progress.hidden = false;
+  const wizard = STEPS.slice(2);
+  progress.innerHTML = wizard.map((t, i) =>
+    `<span${i === stepIndex - 2 ? ' class="on"' : ""} data-automation-id="progressBar${i === stepIndex - 2 ? "ActiveStep" : "Step"}">${t}</span>`).join("");
+}
+
+function renderStep(err) {
+  closeMenu();
+  renderProgress();
+  stage.innerHTML = (err ? `<div class="error-banner" data-automation-id="errorBanner"><strong>Error:</strong> please fix the following required fields: ${err.join("; ")}</div>` : "") + RENDER[stepIndex]();
+  wire();
+  window.scrollTo({ top: 0 });
+}
+
+function showSpinnerThen(next) {
+  closeMenu();
+  stage.innerHTML = `<div class="card"><div class="spinner" data-automation-id="loadingSpinner"><div class="ring"></div>Loading…</div></div>`;
+  setTimeout(next, 1400);
+}
+
+function validate() {
+  const missing = (REQUIRED[stepIndex] || []).filter((k) =>
+    k === "resumeFile" ? !S.resumeFile : k === "terms" ? !S.terms : !S[k]);
+  return missing.map((k) => FIELD_NAMES[k] || k);
+}
+
+function advance() {
+  const missing = validate();
+  if (missing.length) { renderStep(missing); return; }
+  showSpinnerThen(() => { stepIndex += 1; renderStep(); });
+}
+
+/* ---------- portal menus (listbox buttons + searchbox prompts) ---------- */
+function closeMenu() { if (menuEl) menuEl.remove(); menuEl = null; }
+function portalMenu(anchor, items, isPrompt, onPick) {
+  closeMenu();
+  if (!items.length) return;
+  const rect = anchor.getBoundingClientRect();
+  menuEl = document.createElement("div");
+  menuEl.className = "wd-menu";
+  if (!isPrompt) menuEl.setAttribute("role", "listbox");
+  menuEl.style.left = `${rect.left + window.scrollX}px`;
+  menuEl.style.top = `${rect.bottom + window.scrollY + 2}px`;
+  menuEl.innerHTML = items.map((o) =>
+    isPrompt ? `<div data-automation-id="promptOption" data-uxi-widget-type="selectlistitem">${esc(o)}</div>`
+             : `<div role="option">${esc(o)}</div>`).join("");
+  menuEl.addEventListener("mousedown", (e) => {
+    const opt = e.target.closest(isPrompt ? "[data-automation-id=promptOption]" : "[role=option]");
+    if (!opt) return;
+    e.preventDefault();
+    onPick(opt.textContent);
+    closeMenu();
+  });
+  document.body.appendChild(menuEl);
+}
+
+function wire() {
+  for (const inp of stage.querySelectorAll("input[data-k], textarea[data-k]")) {
+    inp.addEventListener("input", () => { S[inp.dataset.k] = inp.value; });
+  }
+  for (const btn of stage.querySelectorAll("[data-list]")) {
+    const k = btn.dataset.list;
+    btn.addEventListener("click", () => portalMenu(btn, LISTS[k], false, (text) => {
+      S[k] = text;
+      btn.textContent = text;
+      btn.classList.add("has-value");
+    }));
+  }
+  for (const inp of stage.querySelectorAll("input[data-prompt]")) {
+    const k = inp.dataset.prompt;
+    const source = PROMPTS[inp.dataset.prompts];
+    let timer = null;
+    const open = () => {
+      const q = inp.value.toLowerCase();
+      portalMenu(inp.closest(".multi"), source.filter((o) => !q || o.toLowerCase().includes(q)), true, (text) => {
+        S[k] = text;
+        inp.value = "";
+        renderStep(); /* re-render shows the pill (and produces DOM churn like real Workday) */
+      });
+    };
+    inp.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(open, 250); });
+    inp.addEventListener("click", open);
+    inp.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+  }
+  for (const radio of stage.querySelectorAll("input[type=radio]")) {
+    radio.addEventListener("change", () => { if (radio.checked) S[radio.name] = radio.value; });
+  }
+  stage.querySelector("#terms")?.addEventListener("change", (e) => { S.terms = e.target.checked; });
+  stage.querySelector("#apply-btn")?.addEventListener("click", () => showSpinnerThen(() => { stepIndex = 1; renderStep(); }));
+  stage.querySelector("#create-account")?.addEventListener("click", advance);
+  stage.querySelector("#next-btn")?.addEventListener("click", advance);
+  stage.querySelector("#back-btn")?.addEventListener("click", () => {
+    if (stepIndex > 1) showSpinnerThen(() => { stepIndex -= 1; renderStep(); });
+  });
+  stage.querySelector("#submit-btn")?.addEventListener("click", () => {
+    window.__testbedSubmitClicked = true;
+    document.getElementById("submit-note").style.display = "block";
+  });
+  stage.querySelector("#select-files")?.addEventListener("click", () =>
+    document.getElementById("resumeUpload").click());
+  stage.querySelector("#resumeUpload")?.addEventListener("change", (e) => {
+    const f = e.target.files[0];
+    S.resumeFile = f ? { name: f.name, bytes: f.size } : null;
+    document.getElementById("resume-fname").textContent = f ? f.name : "";
+  });
+  document.addEventListener("mousedown", (e) => {
+    if (menuEl && !menuEl.contains(e.target) && !e.target.closest("[data-list], .multi")) closeMenu();
+  }, { once: true });
+}
+
+/* ---------- audit hook ---------- */
+window.__testbedState = function () {
+  return { ...S, __step: STEPS[stepIndex], __step_index: stepIndex,
+    __submit_clicked: window.__testbedSubmitClicked };
+};
+
+renderStep();
+</script>
+</body>
+</html>
