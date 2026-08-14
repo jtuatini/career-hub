@@ -57,16 +57,24 @@ def _run(system: str, user_content: str, extra_args: list[str]) -> dict:
         argv, cwd=workdir(), env=_build_env(), capture_output=True, text=True,
         timeout=RUN_TIMEOUT_SECONDS,
     )
-    if proc.returncode != 0:
-        raise ClaudeError(
-            f"agy CLI exited {proc.returncode}: {(proc.stderr or proc.stdout)[-800:]}"
-        )
+    # agy reports failures inside the JSON envelope (with exit 1) — surface
+    # the envelope's error message, never the raw JSON blob.
     try:
         envelope = json.loads(proc.stdout)
     except ValueError as e:
+        if proc.returncode != 0:
+            raise ClaudeError(
+                f"agy CLI exited {proc.returncode}: {(proc.stderr or proc.stdout)[-800:]}"
+            ) from e
         raise ClaudeError(f"agy CLI returned non-JSON output: {proc.stdout[-800:]}") from e
-    if envelope.get("status") != "SUCCESS":
-        raise ClaudeError(f"agy CLI run did not succeed: {proc.stdout[-800:]}")
+    if proc.returncode != 0 or envelope.get("status") != "SUCCESS":
+        detail = envelope.get("error") or proc.stderr.strip() or f"status {envelope.get('status')}"
+        if "Eligibility check failed" in detail or "connection reset" in detail:
+            detail = (
+                "Antigravity couldn't reach Google's service (network or outage) — "
+                f"try again in a bit. [{detail[:200]}]"
+            )
+        raise ClaudeError(f"Antigravity error: {detail[:600]}")
     return envelope
 
 

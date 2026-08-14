@@ -273,3 +273,23 @@ def test_custom_strips_ansi_codes_from_output(sandbox, monkeypatch):
         ),
     )
     assert custom_cli.generate_text("SYS", "USER") == "thinkingBlue"
+
+
+def test_antigravity_envelope_error_is_readable(sandbox, monkeypatch):
+    """agy failures arrive as exit 1 + a JSON envelope; the user must see the
+    envelope's error message, never the raw JSON blob."""
+    monkeypatch.setattr(antigravity_cli.shutil, "which", lambda n: "/opt/bin/agy")
+
+    def run(argv, **kwargs):
+        return SimpleNamespace(
+            returncode=1,
+            stdout='{"status": "ERROR", "response": "", "error": "Eligibility check failed: connection reset by peer"}',
+            stderr="",
+        )
+
+    monkeypatch.setattr(antigravity_cli.subprocess, "run", run)
+    with pytest.raises(ClaudeError) as exc:
+        antigravity_cli.generate_text("SYS", "USER")
+    message = str(exc.value)
+    assert "couldn't reach Google" in message
+    assert '"conversation_id"' not in message and '"usage"' not in message

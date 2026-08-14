@@ -563,12 +563,13 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   /* Full model/error output, readable: wrap everything, scroll past 140px. */
   margin: 0;
   white-space: pre-wrap;
-  word-break: break-word;
+  overflow-wrap: anywhere;
   max-height: 140px;
   overflow-y: auto;
   font-size: 11px;
   color: var(--ink-soft);
 }
+.engine-model-row .hint { margin: 4px 0 0; overflow-wrap: anywhere; }
 .model-custom { display: flex; gap: 6px; }
 .model-custom input { flex: 1; min-width: 0; }
 
@@ -816,6 +817,7 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   z-index: 40;
   min-width: 190px;
   max-width: 300px;
+  overflow-wrap: anywhere;
   padding: 6px;
   background: var(--paper);
   border: 1px solid var(--line-strong);
@@ -825,6 +827,9 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   flex-direction: column;
   gap: 2px;
 }
+/* Flex children won't shrink below content width by default — long unbroken
+   strings (model ids, error JSON) would push rows past the panel edge. */
+.navmenu-panel > * { min-width: 0; }
 .navmenu-item {
   text-align: left;
   font-size: 12px;
