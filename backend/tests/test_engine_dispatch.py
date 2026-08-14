@@ -191,3 +191,22 @@ def test_put_provider_endpoint_switches_and_returns_full_status(client):
 def test_put_provider_endpoint_rejects_unknown_provider(client):
     resp = client.put("/api/engine/provider", json={"provider": "banana"})
     assert resp.status_code == 422
+
+
+def test_engine_test_connection_reports_success(client, monkeypatch):
+    monkeypatch.setattr(claude_cli, "available", lambda: True)
+    monkeypatch.setattr(claude_cli, "generate_text", lambda s, u: "OK")
+    body = client.post("/api/engine/test").json()
+    assert body["ok"] is True and body["provider"] == "claude"
+    assert "seconds" in body and body["reply"] == "OK"
+
+
+def test_engine_test_connection_reports_failure(client, monkeypatch):
+    monkeypatch.setattr(claude_cli, "available", lambda: True)
+
+    def boom(s, u):
+        raise ClaudeError("no login")
+
+    monkeypatch.setattr(claude_cli, "generate_text", boom)
+    body = client.post("/api/engine/test").json()
+    assert body["ok"] is False and "no login" in body["error"]

@@ -52,3 +52,9 @@ def set_custom_command(payload: CustomCommandIn) -> dict:
     Empty string unconfigures it."""
     engine_prefs.set_custom_command(payload.command)
     return engine_service.status()
+
+
+@router.post("/test")
+def test_connection() -> dict:
+    """Live round trip through the selected provider+model."""
+    return engine_service.test_connection()

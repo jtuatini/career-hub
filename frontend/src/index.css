@@ -518,7 +518,15 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
 .engine-api { color: var(--accent); border-color: var(--accent); }
 .engine-no-engine { color: var(--redline); border-color: var(--redline); }
 .engine-picker { display: inline-block; margin-left: 8px; }
-.engine-picker .engine-chip { cursor: pointer; }
+.engine-picker .engine-chip {
+  cursor: pointer;
+  /* Long model ids must never crowd the nav: cap and ellipsize the chip. */
+  max-width: 230px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
 .engine-setup-help { min-width: 260px; padding: 4px 8px; }
 .engine-setup-help code { font-size: 12px; }
 
@@ -541,6 +549,26 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   padding: 4px 6px;
 }
 .model-options { display: flex; flex-direction: column; gap: 2px; margin: 6px 0; }
+.model-options .navmenu-item { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.engine-test-output {
+  margin-top: 6px;
+  padding: 6px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 2px;
+  font-size: 12px;
+}
+.engine-test-output.ok { border-color: var(--accent); }
+.engine-test-output .engine-test-headline { font-weight: 600; margin-bottom: 2px; }
+.engine-test-output pre {
+  /* Full model/error output, readable: wrap everything, scroll past 140px. */
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 140px;
+  overflow-y: auto;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
 .model-custom { display: flex; gap: 6px; }
 .model-custom input { flex: 1; min-width: 0; }
 
@@ -787,6 +815,7 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   left: 0;
   z-index: 40;
   min-width: 190px;
+  max-width: 300px;
   padding: 6px;
   background: var(--paper);
   border: 1px solid var(--line-strong);

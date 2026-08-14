@@ -1,4 +1,5 @@
 import hmac
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -38,6 +39,36 @@ auth.get_token()
 TOKEN_EXEMPT = {"/api/health", "/api/redoc", "/api/openapi.json"}
 
 
+class TokenBucket:
+    """Minimal in-process token bucket. Everything arrives from 127.0.0.1, so
+    there is no per-client key — the buckets are global backstops against a
+    hammering caller (a misbehaving page, extension loop, or script), not a
+    fairness mechanism."""
+
+    def __init__(self, rate: float, burst: float) -> None:
+        self.rate, self.burst = rate, burst
+        self.tokens = burst
+        self.updated = time.monotonic()
+
+    def take(self) -> bool:
+        now = time.monotonic()
+        self.tokens = min(self.burst, self.tokens + (now - self.updated) * self.rate)
+        self.updated = now
+        if self.tokens >= 1:
+            self.tokens -= 1
+            return True
+        return False
+
+
+# Generous for the UI (it never bursts anywhere near this), fatal for a loop.
+RATE_LIMIT = TokenBucket(rate=30, burst=120)
+# Rejected-token attempts get a far smaller budget: nothing legitimate fails
+# auth repeatedly, so sustained failures are a probe — starve it.
+AUTH_FAIL_LIMIT = TokenBucket(rate=0.5, burst=20)
+
+_RATE_LIMITED = {"detail": "Too many requests — wait a moment and try again."}
+
+
 @app.middleware("http")
 async def require_api_token(request: Request, call_next):
     """Shared-token gate for REST. WebSockets are guarded by the Origin check in
@@ -45,9 +76,17 @@ async def require_api_token(request: Request, call_next):
     outermost and answers preflights (which never carry custom headers)."""
     path = request.url.path
     if path.startswith("/api") and path not in TOKEN_EXEMPT:
+        if not RATE_LIMIT.take():
+            return JSONResponse(
+                status_code=429, content=_RATE_LIMITED, headers={"Retry-After": "2"}
+            )
         if not hmac.compare_digest(
             request.headers.get("x-copilot-token") or "", auth.get_token()
         ):
+            if not AUTH_FAIL_LIMIT.take():
+                return JSONResponse(
+                    status_code=429, content=_RATE_LIMITED, headers={"Retry-After": "30"}
+                )
             # New-tab PDF opens can't send headers: accept a short-lived signed ticket.
             params = request.query_params
             if (

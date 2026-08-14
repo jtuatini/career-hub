@@ -20,12 +20,29 @@ import threading
 from pathlib import Path
 
 from app.config import settings
+from app.services import engine_prefs
 
 BACKEND_DIR = Path(__file__).resolve().parents[2]
 BUFFER_LIMIT = 200_000  # bytes of scrollback replayed on reattach
 
 # Tests override this with a stub command (e.g. ["/bin/cat"]).
 SESSION_ARGV: list[str] | None = None
+
+WORKSPACE_AGENTS_MD = """\
+# AI Workspace — Application Copilot
+
+You are running inside the Application Copilot app, the user's local internship
+application system. This folder is your sandbox: keep scratch files here. The
+app's own source code is out of scope.
+
+Ground rules:
+- Everything here is the user's real application material. Never invent
+  experiences, numbers, or credentials they don't have.
+- The copilot MCP tools (resume bank, memory web) are only mounted in Claude
+  sessions — in this session, work with the files present in this folder and
+  what the user tells you.
+- Never submit anything on the user's behalf; drafts are for their review.
+"""
 
 WORKSPACE_CLAUDE_MD = """\
 # AI Workspace — Application Copilot
@@ -90,6 +107,9 @@ def ensure_workspace() -> Path:
     ws = settings.data_dir / "ai-workspace"
     (ws / ".claude").mkdir(parents=True, exist_ok=True)
     (ws / "CLAUDE.md").write_text(WORKSPACE_CLAUDE_MD)
+    # Codex and Antigravity sessions read AGENTS.md instead of CLAUDE.md and
+    # have no copilot MCP tools mounted — give them the workspace ground rules.
+    (ws / "AGENTS.md").write_text(WORKSPACE_AGENTS_MD)
     mcp_config = {
         "mcpServers": {
             "copilot": {
@@ -101,21 +121,58 @@ def ensure_workspace() -> Path:
         }
     }
     (ws / ".mcp.json").write_text(json.dumps(mcp_config, indent=2))
+    # Antigravity reads workspace MCP servers from .agents/mcp_config.json —
+    # same server, same shape, so agy sessions get the copilot tools too.
+    (ws / ".agents").mkdir(exist_ok=True)
+    (ws / ".agents" / "mcp_config.json").write_text(json.dumps(mcp_config, indent=2))
     (ws / ".claude" / "settings.json").write_text(
         json.dumps({"enableAllProjectMcpServers": True}, indent=2)
     )
     return ws
 
 
-def build_env(claude_bin: Path) -> dict[str, str]:
+def build_env(cli_bin: Path) -> dict[str, str]:
     env = dict(os.environ)
-    # Subscription auth only: with the key in the environment, claude would silently
-    # bill the metered API instead of the user's plan.
-    env.pop("ANTHROPIC_API_KEY", None)
+    # Subscription auth only: with a metered key in the environment, the CLI
+    # would silently bill the API instead of the user's plan — strip them all,
+    # whichever provider is spawning.
+    for key in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY", "GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        env.pop(key, None)
     env["TERM"] = "xterm-256color"
     env["COLORTERM"] = "truecolor"
-    env["PATH"] = f"{claude_bin.parent}:{env.get('PATH', '')}"
+    env["PATH"] = f"{cli_bin.parent}:{env.get('PATH', '')}"
     return env
+
+
+def codex_mcp_flags(readonly: bool = False) -> list[str]:
+    """Mount the copilot MCP server in a codex session. Codex has no
+    per-session config file flag, so the server is injected via -c overrides
+    (values are TOML; a JSON string array is valid TOML). readonly=True sets
+    COPILOT_MCP_READONLY so only the read tools register — codex has no
+    --allowedTools equivalent, so the restriction lives in the server."""
+    args = json.dumps(["run", "--directory", str(BACKEND_DIR), "python", "-m", "app.mcp_server"])
+    flags = [
+        "-c", f'mcp_servers.copilot.command="{_find_uv_binary()}"',
+        "-c", f"mcp_servers.copilot.args={args}",
+    ]
+    if readonly:
+        flags += ["-c", 'mcp_servers.copilot.env={COPILOT_MCP_READONLY = "1"}']
+    return flags
+
+
+def find_provider_binary(provider: str) -> Path:
+    """Interactive TUI binary for the selected engine provider."""
+    if provider == "codex":
+        found = shutil.which("codex")
+        if found:
+            return Path(found)
+        raise FileNotFoundError("codex CLI not found — install it and run `codex login`")
+    if provider == "antigravity":
+        found = shutil.which("agy")
+        if found:
+            return Path(found)
+        raise FileNotFoundError("agy CLI not found — install Antigravity and sign in once")
+    return find_claude_binary()
 
 
 class TerminalSession:
@@ -203,14 +260,32 @@ _session: TerminalSession | None = None
 
 def get_or_create() -> TerminalSession:
     global _session
+    # The Terminal tab follows the engine picker: claude, codex, and
+    # antigravity each spawn their own TUI. "custom" engines are headless
+    # command templates with no TUI, so the tab keeps claude for them.
+    provider = engine_prefs.get_provider()
+    if provider == "custom":
+        provider = "claude"
+    if (
+        _session is not None
+        and _session.alive
+        and getattr(_session, "provider", None) != provider
+    ):
+        _session.terminate()
+        _session = None
     if _session is None or not _session.alive:
         ws = ensure_workspace()
         if SESSION_ARGV is not None:
             argv, env = SESSION_ARGV, build_env(Path(SESSION_ARGV[0]))
         else:
-            claude = find_claude_binary()
-            argv, env = [str(claude)], build_env(claude)
+            binary = find_provider_binary(provider)
+            argv, env = [str(binary)], build_env(binary)
+            if provider == "codex":
+                # Interactive session: full tools — the user approves each call
+                # in the TUI, same trust model as the claude terminal.
+                argv += codex_mcp_flags(readonly=False)
         _session = TerminalSession(argv, cwd=ws, env=env)
+        _session.provider = provider
     return _session
 
 

@@ -1,15 +1,21 @@
-"""Brainstorm: headless `claude -p` chat sessions over the brain.
+"""Brainstorm: headless chat sessions over the brain, on the selected engine.
 
-Each message spawns a subscription-billed headless Claude Code run in the same
-sandbox as the terminal, with read-only brain tools mounted; --resume threads the
-conversation. Saving ideas into the brain is deliberately NOT a session tool —
-the UI's save button writes through /api/memory so the user approves every save.
+Each message spawns a subscription-billed headless CLI run in the same sandbox
+as the terminal. Claude sessions get the copilot MCP read tools and --resume
+threading; codex (`codex exec` + thread resume) and antigravity (`agy -p` +
+--conversation) thread natively but run without the MCP mounts; the custom
+engine is stateless per message. Saving ideas into the brain is deliberately
+NOT a session tool — the UI's save button writes through /api/memory so the
+user approves every save.
 """
 
 import asyncio
 import json
+import shutil
 from collections.abc import AsyncIterator
+from pathlib import Path
 
+from app.services import engine_prefs
 from app.services import terminal as terminal_service
 
 # Tests override this with a stub that prints canned stream-json (message appended).
@@ -38,6 +44,24 @@ READ_TOOLS = (
     "mcp__copilot__search_memory,mcp__copilot__get_entry,mcp__copilot__search_qa,"
     "mcp__copilot__list_jobs,mcp__copilot__get_job"
 )
+
+# codex/antigravity/custom brainstorm runs have NO copilot MCP tools, so the
+# persona must not promise brain tools it doesn't have. This is an upstream
+# limitation, not an oversight: headless `codex exec` auto-cancels every MCP
+# tool call ("user cancelled MCP tool call" — openai/codex#16685/#24135) and
+# the only bypass also disables the shell sandbox, which prompt-exposed runs
+# must never do; agy print mode has the same approval wall. Interactive
+# Terminal sessions DO get the tools — their TUIs let the user approve calls.
+PERSONA_GENERIC = """\
+You are the user's brainstorming partner inside their Application Copilot app, talking
+through internship applications: which experiences to highlight, angles for essays
+and answers, companies and roles worth pursuing, interview stories.
+
+You have NO access to their saved memories or resume bank in this session — never
+invent experiences they don't have. Ask about their real material and build on what
+they tell you. Be a sparring partner: concrete options over platitudes, push back
+when an idea is weak, keep responses tight.\
+"""
 
 
 def build_argv(message: str, session_id: str | None) -> list[str]:
@@ -94,8 +118,126 @@ def _events_from_line(line: str) -> list[dict]:
     return []
 
 
+async def _run_lines(argv: list[str], env: dict | None) -> tuple[list[str], int, str]:
+    """Run a headless CLI turn; returns (stdout lines, returncode, stderr tail)."""
+    ws = terminal_service.ensure_workspace()
+    proc = await asyncio.create_subprocess_exec(
+        *argv, cwd=ws, env=env,
+        stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE,
+    )
+    try:
+        async with asyncio.timeout(SESSION_TIMEOUT_SECONDS):
+            stdout, stderr = await proc.communicate()
+    except TimeoutError:
+        proc.kill()
+        raise
+    return (
+        stdout.decode("utf-8", "replace").splitlines(),
+        proc.returncode or 0,
+        stderr.decode("utf-8", "replace").strip()[-2000:],
+    )
+
+
+async def _antigravity_reply(message: str, session_id: str | None) -> AsyncIterator[dict]:
+    agy = shutil.which("agy")
+    if agy is None:
+        yield {"type": "error", "message": "agy CLI not found — install Antigravity and sign in once"}
+        return
+    prompt = message if session_id else f"{PERSONA_GENERIC}\n\n{message}"
+    argv = [agy, "-p", prompt, "--output-format", "json", "--sandbox", "--disable-slash-commands"]
+    if session_id:
+        argv += ["--conversation", session_id]
+    if model := engine_prefs.get_model("antigravity"):
+        argv += ["--model", model]
+    try:
+        lines, code, stderr = await _run_lines(argv, terminal_service.build_env(Path(agy)))
+    except TimeoutError:
+        yield {"type": "error", "message": f"agy run timed out after {SESSION_TIMEOUT_SECONDS}s"}
+        return
+    try:
+        envelope = json.loads("\n".join(lines))
+    except ValueError:
+        yield {"type": "error", "message": stderr or f"agy exited {code} with non-JSON output"}
+        return
+    if code != 0 or envelope.get("status") != "SUCCESS":
+        yield {"type": "error", "message": stderr or f"agy run failed: {envelope.get('status')}"}
+        return
+    sid = envelope.get("conversation_id")
+    yield {"type": "session", "session_id": sid}
+    yield {"type": "text", "text": (envelope.get("response") or "").strip()}
+    yield {"type": "done", "session_id": sid, "is_error": False}
+
+
+async def _codex_reply(message: str, session_id: str | None) -> AsyncIterator[dict]:
+    codex = shutil.which("codex")
+    if codex is None:
+        yield {"type": "error", "message": "codex CLI not found — install it and run `codex login`"}
+        return
+    common = ["--json", "--skip-git-repo-check", "-s", "read-only"]
+    if model := engine_prefs.get_model("codex"):
+        common += ["-m", model]
+    if session_id:
+        argv = [codex, "exec", "resume", session_id, *common, message]
+    else:
+        argv = [codex, "exec", *common, f"{PERSONA_GENERIC}\n\n{message}"]
+    try:
+        lines, code, stderr = await _run_lines(argv, terminal_service.build_env(Path(codex)))
+    except TimeoutError:
+        yield {"type": "error", "message": f"codex run timed out after {SESSION_TIMEOUT_SECONDS}s"}
+        return
+    sid, texts = session_id, []
+    for line in lines:
+        try:
+            event = json.loads(line)
+        except ValueError:
+            continue
+        if event.get("type") == "thread.started":
+            sid = event.get("thread_id")
+        elif event.get("type") == "item.completed":
+            item = event.get("item", {})
+            if item.get("type") == "agent_message" and item.get("text"):
+                texts.append(item["text"])
+            elif item.get("type") == "command_execution":
+                yield {"type": "tool", "name": "shell"}
+    if code != 0 and not texts:
+        yield {"type": "error", "message": stderr or f"codex exited {code}"}
+        return
+    yield {"type": "session", "session_id": sid}
+    yield {"type": "text", "text": "\n\n".join(texts).strip()}
+    yield {"type": "done", "session_id": sid, "is_error": False}
+
+
+async def _custom_reply(message: str) -> AsyncIterator[dict]:
+    from app.services.engine_providers import custom_cli
+
+    try:
+        text = await asyncio.to_thread(custom_cli.generate_text, PERSONA_GENERIC, message)
+    except Exception as e:  # ClaudeError or subprocess timeout
+        yield {"type": "error", "message": str(e)}
+        return
+    yield {"type": "text", "text": text}
+    # No session event: the custom template has no conversation threading —
+    # each turn stands alone.
+    yield {"type": "done", "session_id": None, "is_error": False}
+
+
 async def stream_reply(message: str, session_id: str | None) -> AsyncIterator[dict]:
-    """Run one brainstorm turn; yields session/text/tool/done/error event dicts."""
+    """Run one brainstorm turn on the selected engine; yields
+    session/text/tool/done/error event dicts."""
+    if BRAINSTORM_ARGV is None:
+        provider = engine_prefs.get_provider()
+        if provider == "antigravity":
+            async for event in _antigravity_reply(message, session_id):
+                yield event
+            return
+        if provider == "codex":
+            async for event in _codex_reply(message, session_id):
+                yield event
+            return
+        if provider == "custom":
+            async for event in _custom_reply(message):
+                yield event
+            return
     ws = terminal_service.ensure_workspace()
     try:
         argv = build_argv(message, session_id)

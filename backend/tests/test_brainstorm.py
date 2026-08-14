@@ -91,3 +91,76 @@ def test_resume_threads_session_id(tmp_path, monkeypatch):
 
     argv = brainstorm_service.build_argv("hello", "sess-9")
     assert argv[argv.index("--resume") + 1] == "sess-9"
+
+
+def _collect(message, session_id):
+    import asyncio
+
+    async def go():
+        return [e async for e in brainstorm_service.stream_reply(message, session_id)]
+
+    return asyncio.run(go())
+
+
+def test_antigravity_brainstorm_threads_conversation(tmp_path, monkeypatch):
+    from app.services import engine_prefs
+
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    engine_prefs.set_provider("antigravity")
+    monkeypatch.setattr(brainstorm_service.shutil, "which", lambda n: f"/opt/bin/{n}")
+    captured = {}
+
+    async def fake_run(argv, env):
+        captured["argv"] = argv
+        return (
+            [json.dumps({"status": "SUCCESS", "response": "idea!", "conversation_id": "c-9"})],
+            0,
+            "",
+        )
+
+    monkeypatch.setattr(brainstorm_service, "_run_lines", fake_run)
+
+    events = _collect("hi", None)
+    assert {"type": "session", "session_id": "c-9"} in events
+    assert any(e["type"] == "text" and e["text"] == "idea!" for e in events)
+    assert events[-1]["type"] == "done" and events[-1]["session_id"] == "c-9"
+    assert captured["argv"][0] == "/opt/bin/agy"
+    assert brainstorm_service.PERSONA_GENERIC in captured["argv"][2]  # first turn: persona
+    assert "--conversation" not in captured["argv"]
+
+    _collect("more", "c-9")
+    assert "--conversation" in captured["argv"]  # resume turn threads natively
+    assert brainstorm_service.PERSONA_GENERIC not in captured["argv"][2]
+
+
+def test_codex_brainstorm_parses_jsonl_and_resumes(tmp_path, monkeypatch):
+    from app.services import engine_prefs
+
+    monkeypatch.setattr(settings, "data_dir", tmp_path)
+    engine_prefs.set_provider("codex")
+    monkeypatch.setattr(brainstorm_service.shutil, "which", lambda n: f"/opt/bin/{n}")
+    captured = {}
+
+    async def fake_run(argv, env):
+        captured["argv"] = argv
+        return (
+            [
+                json.dumps({"type": "thread.started", "thread_id": "t-1"}),
+                json.dumps({"type": "item.completed", "item": {"type": "command_execution"}}),
+                json.dumps({"type": "item.completed", "item": {"type": "agent_message", "text": "plan A"}}),
+                json.dumps({"type": "turn.completed"}),
+            ],
+            0,
+            "",
+        )
+
+    monkeypatch.setattr(brainstorm_service, "_run_lines", fake_run)
+
+    events = _collect("hi", None)
+    assert {"type": "session", "session_id": "t-1"} in events
+    assert {"type": "tool", "name": "shell"} in events
+    assert any(e["type"] == "text" and e["text"] == "plan A" for e in events)
+    assert captured["argv"][:2] == ["/opt/bin/codex", "exec"]
+
+    _collect("more", "t-1")
+    assert captured["argv"][:4] == ["/opt/bin/codex", "exec", "resume", "t-1"]

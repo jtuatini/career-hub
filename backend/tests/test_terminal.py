@@ -95,3 +95,52 @@ def test_websocket_rejects_untrusted_origin(client, workspace_env, headers):
         with client.websocket_connect("/api/terminal/ws", headers=headers):
             pass
     assert exc.value.code == 1008
+
+
+def test_find_provider_binary_maps_providers(monkeypatch):
+    monkeypatch.setattr(terminal_service.shutil, "which", lambda n: f"/opt/bin/{n}")
+    assert terminal_service.find_provider_binary("codex").name == "codex"
+    assert terminal_service.find_provider_binary("antigravity").name == "agy"
+    assert terminal_service.find_provider_binary("claude").name == "claude"
+    monkeypatch.setattr(terminal_service.shutil, "which", lambda n: None)
+    with pytest.raises(FileNotFoundError):
+        terminal_service.find_provider_binary("codex")
+
+
+def test_terminal_respawns_on_provider_switch(client, workspace_env):
+    from app.services import engine_prefs
+
+    ok_origin = {"origin": "http://localhost:5173"}
+    with client.websocket_connect("/api/terminal/ws", headers=ok_origin):
+        pass
+    first = terminal_service._session
+    assert first is not None and first.provider == "claude"
+
+    engine_prefs.set_provider("codex")
+    with client.websocket_connect("/api/terminal/ws", headers=ok_origin):
+        pass
+    second = terminal_service._session
+    assert second is not first and second.provider == "codex"
+    assert first.proc.poll() is not None  # old TUI was torn down
+
+    # "custom" has no TUI: the terminal keeps (or returns to) claude.
+    engine_prefs.set_provider("custom")
+    with client.websocket_connect("/api/terminal/ws", headers=ok_origin):
+        pass
+    assert terminal_service._session.provider == "claude"
+
+
+def test_codex_mcp_flags_shapes(workspace_env):
+    flags = " ".join(terminal_service.codex_mcp_flags())
+    assert "mcp_servers.copilot.command=" in flags
+    assert "app.mcp_server" in flags
+    assert "COPILOT_MCP_READONLY" not in flags
+    readonly = " ".join(terminal_service.codex_mcp_flags(readonly=True))
+    assert 'COPILOT_MCP_READONLY = "1"' in readonly
+
+
+def test_workspace_writes_agy_mcp_config(workspace_env):
+    ws = terminal_service.ensure_workspace()
+    cfg = json.loads((ws / ".agents" / "mcp_config.json").read_text())
+    assert "copilot" in cfg["mcpServers"]
+    assert cfg["mcpServers"]["copilot"]["args"][-1] == "app.mcp_server"

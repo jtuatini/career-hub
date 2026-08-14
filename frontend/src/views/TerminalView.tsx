@@ -116,7 +116,7 @@ export default function TerminalView({ visible }: { visible: boolean }) {
         <h2>
           Terminal
           <span className="meta-inline">
-            your claude CLI, sandboxed to data/ai-workspace — subscription-billed
+            your selected engine's CLI, sandboxed to data/ai-workspace — subscription-billed
           </span>
         </h2>
         <div className="btn-row">

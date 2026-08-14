@@ -118,3 +118,26 @@ def test_link_and_get_entry_shows_neighbors(brain_seed):
 def test_qa_roundtrip(brain_seed):
     hits = mcp_server.search_qa("why do you want to work here", k=1)
     assert hits[0]["question"] == "Why us?"
+
+
+def test_readonly_mode_registers_only_read_tools(monkeypatch):
+    """COPILOT_MCP_READONLY=1 must hide every mutating tool — headless
+    brainstorm sessions on CLIs without tool allowlists rely on this."""
+    import asyncio
+    import importlib
+
+    import app.mcp_server as mcp_server_module
+
+    monkeypatch.setenv("COPILOT_MCP_READONLY", "1")
+    reloaded = importlib.reload(mcp_server_module)
+    names = {t.name for t in asyncio.run(reloaded.mcp.list_tools())}
+    assert {"search_memory", "get_entry", "search_qa", "list_jobs", "get_job",
+            "list_resumes", "get_resume_tex"} <= names
+    assert not names & {"add_entry", "link_entries", "save_qa_answer",
+                        "update_resume_tex", "bulk_find_replace"}
+
+    # Restore read-write registration for the rest of the suite.
+    monkeypatch.delenv("COPILOT_MCP_READONLY")
+    restored = importlib.reload(mcp_server_module)
+    restored_names = {t.name for t in asyncio.run(restored.mcp.list_tools())}
+    assert "add_entry" in restored_names

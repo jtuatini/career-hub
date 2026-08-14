@@ -10,7 +10,9 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=REPO_ROOT / "backend" / ".env", extra="ignore")
 
     anthropic_api_key: str = ""
-    claude_model: str = "claude-opus-4-8"
+    # Doubles as the metered-API model ID, so it must be a full ID, not a CLI
+    # alias like "sonnet".
+    claude_model: str = "claude-sonnet-5"
     # "auto" = subscription (claude CLI) first, API fallback; or "subscription"/"api".
     ai_engine: str = "auto"
     # Cap on how far a tailored resume may drift from its base (word-diff ratio).

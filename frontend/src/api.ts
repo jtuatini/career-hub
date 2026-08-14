@@ -461,6 +461,15 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ command }),
     }),
+  testEngine: () =>
+    request<{
+      ok: boolean;
+      provider: string;
+      model: string;
+      seconds?: number;
+      reply?: string;
+      error?: string;
+    }>("/api/engine/test", { method: "POST" }),
 
   getProfile: () => request<Record<string, string>>("/api/profile"),
   putProfile: (values: Record<string, string>) =>

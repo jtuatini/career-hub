@@ -247,3 +247,14 @@ def client(db_sessionmaker):
     with TestClient(app, headers={"X-Copilot-Token": auth.get_token()}) as c:
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    """The rate-limit buckets are process-global; refill them per test so a
+    request-heavy test never starves the next one."""
+    from app import main as app_main
+
+    app_main.RATE_LIMIT.tokens = app_main.RATE_LIMIT.burst
+    app_main.AUTH_FAIL_LIMIT.tokens = app_main.AUTH_FAIL_LIMIT.burst
+    yield

@@ -100,6 +100,10 @@ export default function App() {
   const [enginePickerOpen, setEnginePickerOpen] = useState(false);
   const [modelDraft, setModelDraft] = useState<string | null>(null); // null = not editing
   const [commandDraft, setCommandDraft] = useState<string | null>(null); // custom engine command; null = not editing
+  // Engine test outcome: null = idle, "testing" = in flight, else the result.
+  const [testResult, setTestResult] = useState<
+    "testing" | { ok: boolean; headline: string; detail: string } | null
+  >(null);
   const enginePickerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -187,8 +191,10 @@ export default function App() {
                             disabled={!ok}
                             title={ok ? "" : `${name} CLI not installed / not logged in`}
                             onClick={() => {
-                              setEnginePickerOpen(false);
+                              // Stay open: switching providers just refreshes
+                              // the model options below.
                               setModelDraft(null);
+                              setTestResult(null);
                               api.setEngineProvider(name).then(setEngine);
                             }}
                           >
@@ -244,6 +250,42 @@ export default function App() {
                           </div>
                           {activeModel && !(MODEL_SUGGESTIONS[engine.ai_provider] ?? []).includes(activeModel) && (
                             <p className="hint">current: {activeModel}</p>
+                          )}
+                          <div className="model-custom">
+                            <button
+                              disabled={testResult === "testing"}
+                              onClick={() => {
+                                setTestResult("testing");
+                                api
+                                  .testEngine()
+                                  .then((r) =>
+                                    setTestResult(
+                                      r.ok
+                                        ? {
+                                            ok: true,
+                                            headline: `✓ ${r.provider}${r.model ? ` · ${r.model}` : ""} replied in ${r.seconds}s`,
+                                            detail: r.reply ?? "",
+                                          }
+                                        : {
+                                            ok: false,
+                                            headline: `✗ ${r.provider} test failed`,
+                                            detail: r.error ?? "",
+                                          },
+                                    ),
+                                  )
+                                  .catch((e) =>
+                                    setTestResult({ ok: false, headline: "✗ test failed", detail: e.message }),
+                                  );
+                              }}
+                            >
+                              {testResult === "testing" ? "Testing…" : "Test connection"}
+                            </button>
+                          </div>
+                          {testResult && testResult !== "testing" && (
+                            <div className={`engine-test-output ${testResult.ok ? "ok" : "err"}`}>
+                              <div className="engine-test-headline">{testResult.headline}</div>
+                              {testResult.detail && <pre>{testResult.detail}</pre>}
+                            </div>
                           )}
                         </div>
                         <div className="engine-model-row">

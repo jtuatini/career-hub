@@ -219,3 +219,23 @@ def generate_json_with_image(system: str, png_bytes: bytes, schema: dict) -> dic
         lambda mod: mod.image(system, png_bytes, schema),
         lambda: api_engine.generate_json_with_image(system, png_bytes, schema),
     )
+
+
+def test_connection() -> dict:
+    """One tiny live prompt through the SELECTED provider (no fallback chain),
+    so the picker's Test button reports on exactly what's configured."""
+    import time as _time
+
+    provider = engine_prefs.get_provider()
+    mod = PROVIDERS[provider]
+    model = engine_prefs.get_model(provider)
+    base = {"provider": provider, "model": model}
+    if not mod.available():
+        return {**base, "ok": False, "error": f"{provider} CLI not installed / not configured"}
+    start = _time.monotonic()
+    try:
+        reply = mod.generate_text("Reply with exactly: OK", "Connection test.")
+    except Exception as e:
+        return {**base, "ok": False, "error": str(e)[-500:]}
+    return {**base, "ok": True, "seconds": round(_time.monotonic() - start, 1),
+            "reply": reply[:80]}

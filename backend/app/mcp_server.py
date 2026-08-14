@@ -1,12 +1,18 @@
-"""Stdio MCP server exposing the resume bank and job tracker to Claude Code sessions.
+"""Stdio MCP server exposing the resume bank and job tracker to AI CLI sessions
+(Claude Code, Codex, Antigravity).
 
-Spawned by the embedded terminal (and mountable from any external Claude Code session):
+Spawned by the embedded terminal (and mountable from any external session):
     uv run --project backend python -m app.mcp_server
 
 Every write goes through the same service layer as the UI — versioned, compiled,
-validated. Phase 2 adds the brain tools (search_memory, add_entry, ...) here.
+validated.
+
+COPILOT_MCP_READONLY=1 registers only the read tools — used by headless
+brainstorm sessions on CLIs that have no per-tool allowlist flag, so a
+brainstorm can never mutate the brain or the resume bank.
 """
 
+import os
 from contextlib import contextmanager
 
 from mcp.server.fastmcp import FastMCP
@@ -18,6 +24,13 @@ from app.services import resume_bank
 from app.services.latex import CompileError
 
 mcp = FastMCP("application-copilot")
+
+READONLY = os.environ.get("COPILOT_MCP_READONLY") == "1"
+
+
+def writable_tool(fn):
+    """Register fn as an MCP tool only in read-write mode."""
+    return fn if READONLY else mcp.tool()(fn)
 
 
 @contextmanager
@@ -67,7 +80,7 @@ def get_resume_tex(resume_id: int) -> str:
         return resume.tex_source
 
 
-@mcp.tool()
+@writable_tool
 def update_resume_tex(resume_id: int, tex_source: str, name: str | None = None) -> dict:
     """Save an edited resume as a new version (the bank never mutates in place).
     Compiles immediately; on LaTeX errors nothing is saved and the compiler
@@ -83,7 +96,7 @@ def update_resume_tex(resume_id: int, tex_source: str, name: str | None = None) 
         return {"status": "updated", **_resume_summary(version)}
 
 
-@mcp.tool()
+@writable_tool
 def bulk_find_replace(find: str, replace: str, job_type: str | None = None) -> list[dict]:
     """Literal find/replace across the latest version of every LaTeX resume
     (optionally scoped to a job_type). Creates a new compiled version per match;
@@ -163,7 +176,7 @@ def get_entry(entry_id: int) -> dict:
         return out
 
 
-@mcp.tool()
+@writable_tool
 def add_entry(
     type: str, title: str, content: str, tags: list[str] | None = None
 ) -> dict:
@@ -181,7 +194,7 @@ def add_entry(
         return _entry_out(entry)
 
 
-@mcp.tool()
+@writable_tool
 def link_entries(from_id: int, to_id: int, relation: str | None = None) -> dict:
     """Connect two memories in the web (e.g. a story to the skill it demonstrates).
     relation must be one of: demonstrates, used, built, worked_at, part_of, led_to, related."""
@@ -207,7 +220,7 @@ def search_qa(query: str, k: int = 5) -> list[dict]:
         ]
 
 
-@mcp.tool()
+@writable_tool
 def save_qa_answer(
     question: str, answer: str, tags: list[str] | None = None, job_id: int | None = None
 ) -> dict:
