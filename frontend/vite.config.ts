@@ -4,16 +4,20 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // Shared API token, injected server-side so the browser never sees it.
-// Created by the backend on first request — if this is a brand-new setup,
-// start the backend once, then restart `npm run dev`.
+// The backend mints data/api_token at startup; we read it lazily per request
+// (cached once found) so Vite starting before the backend — as start.sh does —
+// can't wedge the proxy in a tokenless state.
+const tokenUrl = new URL('../data/api_token', import.meta.url)
 let apiToken = ''
-try {
-  apiToken = readFileSync(
-    fileURLToPath(new URL('../data/api_token', import.meta.url)),
-    'utf8',
-  ).trim()
-} catch {
-  console.warn('[copilot] data/api_token not found — start the backend, then restart vite')
+function readToken(): string {
+  if (!apiToken) {
+    try {
+      apiToken = readFileSync(fileURLToPath(tokenUrl), 'utf8').trim()
+    } catch {
+      // Backend not up yet — the next request retries.
+    }
+  }
+  return apiToken
 }
 
 // https://vite.dev/config/
@@ -24,7 +28,12 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8321',
         ws: true,
-        headers: apiToken ? { 'X-Copilot-Token': apiToken } : {},
+        configure(proxy) {
+          proxy.on('proxyReq', (proxyReq) => {
+            const token = readToken()
+            if (token) proxyReq.setHeader('X-Copilot-Token', token)
+          })
+        },
       },
     },
   },

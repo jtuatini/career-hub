@@ -28,6 +28,11 @@ from app.services import auth
 
 app = FastAPI(title="Application Copilot", docs_url="/api/redoc", openapi_url="/api/openapi.json")
 
+# Mint the shared token before the server starts listening: the Vite proxy and
+# the extension need data/api_token to exist by the time the first request
+# arrives, not after it (fresh installs hit that race via start.sh).
+auth.get_token()
+
 # Paths callable without the shared token: health checks and API discovery.
 TOKEN_EXEMPT = {"/api/health", "/api/redoc", "/api/openapi.json"}
 
