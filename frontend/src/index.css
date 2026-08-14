@@ -823,6 +823,15 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   min-width: 190px;
   max-width: 300px;
   overflow-wrap: anywhere;
+  /* The panel lives inside the top nav, which is nowrap/uppercase/spaced —
+     reset all three so panel prose renders and wraps like normal text
+     (items and labels re-apply their own uppercase styles). */
+  white-space: normal;
+  text-transform: none;
+  letter-spacing: normal;
+  /* Never taller than the window: scroll inside instead of clipping. */
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
   padding: 6px;
   background: var(--paper);
   border: 1px solid var(--line-strong);
