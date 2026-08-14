@@ -125,7 +125,7 @@ def test_status_endpoint(client):
     assert body["api_key_configured"] in (True, False)
     assert "last_used" in body and body["last_used"] in (None, "subscription", "api")
     assert body["ai_provider"] == "claude"
-    assert set(body["providers"]) == {"claude", "codex", "gemini"}
+    assert set(body["providers"]) == {"claude", "codex", "antigravity", "custom"}
     assert all(isinstance(v, bool) for v in body["providers"].values())
     assert "last_provider" in body
 

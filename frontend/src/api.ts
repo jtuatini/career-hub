@@ -313,6 +313,7 @@ export interface EngineStatus {
   last_provider: string | null;
   models: Record<string, string>;
   model_defaults: Record<string, string>;
+  custom_command: string;
 }
 
 export interface NetworkTarget {
@@ -454,6 +455,11 @@ export const api = {
     request<EngineStatus>("/api/engine/model", {
       method: "PUT",
       body: JSON.stringify({ provider, model }),
+    }),
+  setEngineCustomCommand: (command: string) =>
+    request<EngineStatus>("/api/engine/custom-command", {
+      method: "PUT",
+      body: JSON.stringify({ command }),
     }),
 
   getProfile: () => request<Record<string, string>>("/api/profile"),

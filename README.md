@@ -47,7 +47,7 @@ Full setup details (choosing your AI engine, optional extras): **[SETUP.md](SETU
 - The backend binds to `127.0.0.1` only.
 - Outbound traffic is limited to: job-posting text, resume text, and the
   snippets being written — sent to the **one** AI engine you choose
-  (Claude / Codex / Gemini CLI on your subscription, or the Anthropic API);
+  (Claude / Codex / Antigravity CLI on your subscription, or the Anthropic API);
   plus user-triggered public reads from `api.github.com`.
 - CLI engines bill your subscription; the app strips `ANTHROPIC_API_KEY` from
   embedded CLI sessions so you're never metered by accident.

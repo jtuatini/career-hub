@@ -14,8 +14,15 @@ bills an API key from a CLI run:
   run `claude` once to log in. Your prompts go to Anthropic.
 - **OpenAI:** install the Codex CLI (`npm i -g @openai/codex`), run
   `codex login` (ChatGPT plan). Your prompts go to OpenAI.
-- **Gemini:** install the Gemini CLI (`npm i -g @google/gemini-cli`), run
-  `gemini` once to sign in. Your prompts go to Google.
+- **Google:** install [Antigravity](https://antigravity.google) (its `agy`
+  CLI replaced the retired Gemini CLI), run `agy` once to sign in. Your
+  prompts go to Google.
+- **Any other CLI (fully local too):** pick the **custom** engine in the
+  in-app picker and enter its command — `ollama` alone runs
+  `ollama run <model>` locally; or a template like `llm -m {model}`
+  (`{prompt}` puts the prompt in the command line, otherwise it's piped
+  on stdin). Your prompts go wherever that CLI sends them — with `ollama`,
+  nowhere.
 - **No subscription?** Put `ANTHROPIC_API_KEY=sk-...` in `backend/.env`
   (metered billing) and restart the backend.
 

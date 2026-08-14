@@ -7,7 +7,7 @@ import json
 
 from app.config import settings
 
-VALID = ("claude", "codex", "gemini")
+VALID = ("claude", "codex", "antigravity", "custom")
 
 
 def _path():
@@ -19,7 +19,16 @@ def _read() -> dict:
         data = json.loads(_path().read_text())
     except (OSError, ValueError):
         return {}
-    return data if isinstance(data, dict) else {}
+    if not isinstance(data, dict):
+        return {}
+    # Legacy shim: the Gemini CLI engine was replaced by Antigravity (agy);
+    # engine.json written before the rename may still say "gemini".
+    if data.get("ai_provider") == "gemini":
+        data["ai_provider"] = "antigravity"
+    models = data.get("models")
+    if isinstance(models, dict) and "gemini" in models:
+        models.setdefault("antigravity", models.pop("gemini"))
+    return data
 
 
 def _write(data: dict) -> None:
@@ -46,6 +55,18 @@ def get_model(provider: str) -> str:
     models = _read().get("models")
     model = models.get(provider, "") if isinstance(models, dict) else ""
     return model if isinstance(model, str) else ""
+
+
+def get_custom_command() -> str:
+    """Command template for the "custom" engine ("" = not configured)."""
+    cmd = _read().get("custom_command", "")
+    return cmd if isinstance(cmd, str) else ""
+
+
+def set_custom_command(command: str) -> None:
+    data = _read()
+    data["custom_command"] = command.strip()
+    _write(data)
 
 
 def set_model(provider: str, model: str) -> None:

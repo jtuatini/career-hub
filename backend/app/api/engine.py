@@ -18,7 +18,7 @@ def engine_status() -> dict:
 
 
 class ProviderIn(BaseModel):
-    provider: Literal["claude", "codex", "gemini"]
+    provider: Literal["claude", "codex", "antigravity", "custom"]
 
 
 @router.put("/provider")
@@ -28,7 +28,7 @@ def set_provider(payload: ProviderIn) -> dict:
 
 
 class ModelIn(BaseModel):
-    provider: Literal["claude", "codex", "gemini"]
+    provider: Literal["claude", "codex", "antigravity", "custom"]
     model: str = ""
 
 
@@ -38,4 +38,17 @@ def set_model(payload: ModelIn) -> dict:
     .env default. Applies to subscription-CLI runs only — the metered-API
     fallback keeps settings.claude_model (CLI aliases aren't API model IDs)."""
     engine_prefs.set_model(payload.provider, payload.model)
+    return engine_service.status()
+
+
+class CustomCommandIn(BaseModel):
+    command: str = ""
+
+
+@router.put("/custom-command")
+def set_custom_command(payload: CustomCommandIn) -> dict:
+    """Command template for the "custom" engine (e.g. `ollama run {model}`).
+    {model} <- the model override; {prompt} <- the prompt, else stdin.
+    Empty string unconfigures it."""
+    engine_prefs.set_custom_command(payload.command)
     return engine_service.status()

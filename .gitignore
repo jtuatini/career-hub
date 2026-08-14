@@ -55,3 +55,4 @@ playwright-report/
 *.synctex.gz
 docs/superpowers/
 scripts/publish.sh
+AGENTS.md

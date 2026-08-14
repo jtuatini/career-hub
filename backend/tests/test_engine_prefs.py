@@ -33,9 +33,18 @@ def test_set_model_preserves_provider_selection(prefs_dir):
 
 
 def test_set_provider_preserves_models(prefs_dir):
-    engine_prefs.set_model("gemini", "gemini-2.5-pro")
-    engine_prefs.set_provider("gemini")
-    assert engine_prefs.get_model("gemini") == "gemini-2.5-pro"
+    engine_prefs.set_model("antigravity", "gemini-3.7-flash-high")
+    engine_prefs.set_provider("antigravity")
+    assert engine_prefs.get_model("antigravity") == "gemini-3.7-flash-high"
+
+
+def test_legacy_gemini_prefs_map_to_antigravity(prefs_dir):
+    # engine.json written before the Gemini CLI → Antigravity rename.
+    (settings.data_dir / "engine.json").write_text(
+        '{"ai_provider": "gemini", "models": {"gemini": "gemini-2.5-pro"}}'
+    )
+    assert engine_prefs.get_provider() == "antigravity"
+    assert engine_prefs.get_model("antigravity") == "gemini-2.5-pro"
 
 
 def test_unknown_provider_raises(prefs_dir):

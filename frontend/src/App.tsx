@@ -72,8 +72,22 @@ const CATEGORIES: { label: string; items: NavItem[] }[] = [
 // Suggestions only — free text is the contract, any model string works.
 const MODEL_SUGGESTIONS: Record<string, string[]> = {
   claude: ["opus", "sonnet", "haiku"],
-  codex: ["gpt-5.3-codex", "gpt-5.2-codex"],
-  gemini: ["gemini-2.5-pro", "gemini-2.5-flash"],
+  // Current Codex-with-ChatGPT set (Aug 2026): gpt-5.6 sol/terra/luna tiers;
+  // gpt-5.5 previous-gen; gpt-5.4[-mini] retire 2026-08-31; gpt-5.3-codex and
+  // older are already unavailable on ChatGPT sign-in.
+  codex: ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "gpt-5.5", "gpt-5.3-codex-spark"],
+  // From `agy models` — Antigravity also serves Claude and GPT-OSS models.
+  antigravity: [
+    "gemini-3.7-flash-high",
+    "gemini-3.7-flash-medium",
+    "gemini-3.7-flash-low",
+    "gemini-3.1-pro-high",
+    "gemini-3.1-pro-low",
+    "claude-sonnet-4-6",
+    "claude-opus-4-6-thinking",
+    "gpt-oss-120b-medium",
+  ],
+  custom: [],
 };
 
 export default function App() {
@@ -85,6 +99,7 @@ export default function App() {
   const [engine, setEngine] = useState<EngineStatus | null>(null);
   const [enginePickerOpen, setEnginePickerOpen] = useState(false);
   const [modelDraft, setModelDraft] = useState<string | null>(null); // null = not editing
+  const [commandDraft, setCommandDraft] = useState<string | null>(null); // custom engine command; null = not editing
   const enginePickerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -111,7 +126,7 @@ export default function App() {
 
   // "subscription" requires the SELECTED provider to actually be available —
   // showing it whenever ANY provider is installed (the prior bug) claimed a
-  // provider·subscription pair that doesn't exist, e.g. only gemini installed,
+  // provider·subscription pair that doesn't exist, e.g. only antigravity installed,
   // provider set to claude -> falsely read "claude · subscription".
   const providerAvailable = engine ? !!engine.providers[engine.ai_provider] : false;
   const anyProviderAvailable = engine ? Object.values(engine.providers).some(Boolean) : false;
@@ -231,6 +246,36 @@ export default function App() {
                             <p className="hint">current: {activeModel}</p>
                           )}
                         </div>
+                        <div className="engine-model-row">
+                          <label>Custom engine command</label>
+                          <div className="model-custom">
+                            <input
+                              placeholder="e.g. ollama  ·  or: llm -m {model}"
+                              value={commandDraft ?? engine.custom_command ?? ""}
+                              onChange={(e) => setCommandDraft(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && commandDraft !== null) {
+                                  api.setEngineCustomCommand(commandDraft.trim()).then(setEngine);
+                                  setCommandDraft(null);
+                                }
+                              }}
+                            />
+                            <button
+                              disabled={commandDraft === null}
+                              onClick={() => {
+                                api.setEngineCustomCommand(commandDraft!.trim()).then(setEngine);
+                                setCommandDraft(null);
+                              }}
+                            >
+                              Save
+                            </button>
+                          </div>
+                          <p className="hint">
+                            Any local CLI as the engine. <code>{"{model}"}</code> ← the model box,{" "}
+                            <code>{"{prompt}"}</code> ← the prompt (otherwise sent on stdin). Bare{" "}
+                            <code>ollama</code> means <code>ollama run {"{model}"}</code>.
+                          </p>
+                        </div>
                       </>
                     ) : (
                       <div className="engine-setup-help">
@@ -242,7 +287,7 @@ export default function App() {
                           <strong>OpenAI</strong>: install the Codex CLI, run <code>codex login</code>.
                         </p>
                         <p className="hint">
-                          <strong>Gemini</strong>: install the Gemini CLI, run <code>gemini</code> once to sign in.
+                          <strong>Google</strong>: install Antigravity, run <code>agy</code> once to sign in.
                         </p>
                         <p className="hint">
                           Or add <code>ANTHROPIC_API_KEY=…</code> to <code>backend/.env</code> and restart. See SETUP.md.

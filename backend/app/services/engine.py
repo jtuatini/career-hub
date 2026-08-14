@@ -34,7 +34,7 @@ from app.config import settings
 from app.services import claude as api_engine
 from app.services import engine_prefs
 from app.services.claude import ClaudeError
-from app.services.engine_providers import claude_cli, codex_cli, gemini_cli
+from app.services.engine_providers import antigravity_cli, claude_cli, codex_cli, custom_cli
 from app.services.engine_providers.claude_cli import (  # noqa: F401 — test seams
     _exec_cli,
     _extract_urls,
@@ -66,7 +66,12 @@ sys.modules[__name__].__class__ = _EngineModule
 
 # Provider registry: name -> module, each exposing NAME/CAPABILITIES/available/
 # generate_text/generate_json (claude also search/image). See engine_providers/.
-PROVIDERS = {"claude": claude_cli, "codex": codex_cli, "gemini": gemini_cli}
+PROVIDERS = {
+    "claude": claude_cli,
+    "codex": codex_cli,
+    "antigravity": antigravity_cli,
+    "custom": custom_cli,
+}
 
 # Status for the UI badge: which engine/provider handled the most recent call.
 last_used: str | None = None  # "subscription" | "api" (legacy UI key)
@@ -100,8 +105,10 @@ def status() -> dict:
         "model_defaults": {
             "claude": settings.claude_model,
             "codex": settings.codex_model,
-            "gemini": settings.gemini_model,
+            "antigravity": settings.antigravity_model,
+            "custom": "",
         },
+        "custom_command": engine_prefs.get_custom_command(),
         "subscription_available": subscription_available(),
         "api_key_configured": bool(settings.anthropic_api_key),
         "last_used": last_used,
@@ -171,7 +178,7 @@ def _dispatch(capability: str, cli_call, api_call):
                 "Subscription engine failed ("
                 + (
                     "; ".join(errors)
-                    or "no CLI provider available (claude/codex/gemini not installed or not logged in)"
+                    or "no CLI provider available (claude/codex/antigravity not installed or not logged in)"
                 )
                 + ") and no API fallback is available."
             ) from last_exc

@@ -6,7 +6,7 @@ import pytest
 from app.config import settings
 from app.services import engine, engine_prefs
 from app.services.claude import ClaudeError
-from app.services.engine_providers import claude_cli, codex_cli, gemini_cli
+from app.services.engine_providers import claude_cli, codex_cli, antigravity_cli
 
 
 @pytest.fixture
@@ -39,13 +39,13 @@ def test_default_chain_falls_back_to_api(prefs_dir, monkeypatch):
 
 
 def test_selected_provider_runs_first(prefs_dir, monkeypatch):
-    engine_prefs.set_provider("gemini")
+    engine_prefs.set_provider("antigravity")
     monkeypatch.setattr(settings, "ai_engine", "auto")
-    monkeypatch.setattr(gemini_cli, "available", lambda: True)
-    monkeypatch.setattr(gemini_cli, "generate_text", lambda s, u: "gemini-out")
+    monkeypatch.setattr(antigravity_cli, "available", lambda: True)
+    monkeypatch.setattr(antigravity_cli, "generate_text", lambda s, u: "antigravity-out")
     monkeypatch.setattr(claude_cli, "generate_text", lambda s, u: "claude-out")
-    assert engine.generate_text("s", "u") == "gemini-out"
-    assert engine.last_provider == "gemini"
+    assert engine.generate_text("s", "u") == "antigravity-out"
+    assert engine.last_provider == "antigravity"
 
 
 def test_selected_provider_failure_falls_through_to_claude(prefs_dir, monkeypatch):
@@ -73,7 +73,7 @@ def test_capability_fallthrough_for_image(prefs_dir, monkeypatch):
 
 
 def test_api_mode_skips_all_clis(prefs_dir, monkeypatch):
-    engine_prefs.set_provider("gemini")
+    engine_prefs.set_provider("antigravity")
     monkeypatch.setattr(settings, "ai_engine", "api")
     monkeypatch.setattr(engine.api_engine, "generate_text", lambda s, u, m=16000: "api-out")
     assert engine.generate_text("s", "u") == "api-out"
@@ -88,10 +88,12 @@ def test_prefs_roundtrip_and_default(prefs_dir):
 def test_status_reports_providers(prefs_dir, monkeypatch):
     monkeypatch.setattr(claude_cli, "available", lambda: True)
     monkeypatch.setattr(codex_cli, "available", lambda: False)
-    monkeypatch.setattr(gemini_cli, "available", lambda: False)
+    monkeypatch.setattr(antigravity_cli, "available", lambda: False)
     st = engine.status()
     assert st["ai_provider"] == "claude"
-    assert st["providers"] == {"claude": True, "codex": False, "gemini": False}
+    assert st["providers"] == {
+        "claude": True, "codex": False, "antigravity": False, "custom": False,
+    }
     assert st["subscription_available"] is True  # legacy key preserved
 
 
@@ -107,7 +109,7 @@ def test_auto_mode_all_unavailable_no_key_surfaces_actionable_api_error(prefs_di
     monkeypatch.setattr(settings, "anthropic_api_key", "")
     monkeypatch.setattr(claude_cli, "available", lambda: False)
     monkeypatch.setattr(codex_cli, "available", lambda: False)
-    monkeypatch.setattr(gemini_cli, "available", lambda: False)
+    monkeypatch.setattr(antigravity_cli, "available", lambda: False)
     with pytest.raises(ClaudeError, match="ANTHROPIC_API_KEY is not set"):
         engine.generate_text("s", "u")
 
@@ -168,16 +170,17 @@ def test_get_provider_defaults_on_corrupt_json(prefs_dir):
 def test_put_provider_endpoint_switches_and_returns_full_status(client):
     """client fixture (conftest.py) isolates settings.data_dir to a tmp_path,
     so this never touches the owner's real data/engine.json."""
-    resp = client.put("/api/engine/provider", json={"provider": "gemini"})
+    resp = client.put("/api/engine/provider", json={"provider": "antigravity"})
     assert resp.status_code == 200
     body = resp.json()
-    assert body["ai_provider"] == "gemini"
+    assert body["ai_provider"] == "antigravity"
     assert set(body) == {
         "engine_preference",
         "ai_provider",
         "providers",
         "models",
         "model_defaults",
+        "custom_command",
         "subscription_available",
         "api_key_configured",
         "last_used",

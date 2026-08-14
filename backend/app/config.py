@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     port: int = 8321
     # Multi-provider engines (Phase 4): CLI model overrides. Empty = CLI default.
     codex_model: str = ""
-    gemini_model: str = ""
+    antigravity_model: str = ""
     # Optional local hiring-agent repo (github.com/interviewstreet/hiring-agent)
     # for the "hiring_agent" ATS scan kind. Empty = feature hidden in the UI.
     ats_repo_path: str = ""

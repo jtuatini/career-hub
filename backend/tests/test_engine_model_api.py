@@ -3,8 +3,8 @@
 
 def test_status_includes_models_and_defaults(client):
     body = client.get("/api/engine/status").json()
-    assert body["models"] == {"claude": "", "codex": "", "gemini": ""}
-    assert set(body["model_defaults"]) == {"claude", "codex", "gemini"}
+    assert body["models"] == {"claude": "", "codex": "", "antigravity": "", "custom": ""}
+    assert set(body["model_defaults"]) == {"claude", "codex", "antigravity", "custom"}
 
 
 def test_put_model_round_trips_in_status(client):
@@ -23,3 +23,12 @@ def test_put_empty_model_clears_override(client):
 def test_put_model_rejects_unknown_provider(client):
     r = client.put("/api/engine/model", json={"provider": "gpt6", "model": "x"})
     assert r.status_code == 422
+
+
+def test_put_custom_command_round_trips_in_status(client):
+    r = client.put("/api/engine/custom-command", json={"command": "ollama run {model}"})
+    assert r.status_code == 200
+    assert r.json()["custom_command"] == "ollama run {model}"
+    assert (
+        client.get("/api/engine/status").json()["custom_command"] == "ollama run {model}"
+    )
