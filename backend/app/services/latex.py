@@ -255,6 +255,7 @@ def compile_tex_info(tex: str, out_dir: Path, name: str) -> tuple[Path, CompileI
                 pdflatex,
                 "-interaction=nonstopmode",
                 "-halt-on-error",
+                "-no-shell-escape",
                 f"-output-directory={workdir}",
                 str(tex_file),
             ]

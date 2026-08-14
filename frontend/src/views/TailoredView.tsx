@@ -4,6 +4,7 @@ import type { DocFeedItem, JobDetail } from "../api";
 import ConfirmButton from "../ConfirmButton";
 import EmptyState from "../EmptyState";
 import TexEditor from "../TexEditor";
+import { safeHttpUrl } from "../url";
 import AtsPanel from "./AtsPanel";
 
 const STATUSES = [
@@ -127,7 +128,7 @@ export default function TailoredView({ focusDocId }: { focusDocId?: number }) {
               <span className={`chip status-${d.job_status}`}>
                 {JOB_STATUS_LABELS[d.job_status] ?? d.job_status}
               </span>
-              {d.job_url && (
+              {safeHttpUrl(d.job_url) && (
                 <a href={d.job_url} target="_blank" rel="noreferrer">
                   posting ↗
                 </a>

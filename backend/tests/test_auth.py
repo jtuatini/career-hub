@@ -44,8 +44,10 @@ def test_token_file_is_owner_only_and_stable(tmp_path, monkeypatch):
 
 
 def test_extension_token_endpoint_requires_auth(client):
-    body = client.get("/api/profile/extension-token").json()
+    body = client.post("/api/profile/extension-token").json()
     assert body["token"] == auth.get_token()
+    # POST-only: the reveal is a deliberate action, never a routine read.
+    assert client.get("/api/profile/extension-token").status_code == 405
 
 
 def test_websocket_rejects_foreign_origins(client, tmp_path, monkeypatch):

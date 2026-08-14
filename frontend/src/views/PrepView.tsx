@@ -3,6 +3,7 @@ import { api } from "../api";
 import type { Job, PrepSession } from "../api";
 import ConfirmButton from "../ConfirmButton";
 import EmptyState from "../EmptyState";
+import { safeHttpUrl } from "../url";
 
 const PREP_FIRST = ["oa", "interview"];
 
@@ -341,14 +342,16 @@ function OaReport({
           {(r.sample_questions ?? []).map((q) => (
             <p className="meta" key={q.question}>
               {q.question}{" "}
-              <a href={q.source} target="_blank" rel="noreferrer">
-                source ↗
-              </a>
+              {safeHttpUrl(q.source) && (
+                <a href={q.source} target="_blank" rel="noreferrer">
+                  source ↗
+                </a>
+              )}
             </p>
           ))}
           {(r.links ?? []).length > 0 && (
             <ul className="meta">
-              {r.links!.map((l) => (
+              {r.links!.filter(safeHttpUrl).map((l) => (
                 <li key={l}>
                   <a href={l} target="_blank" rel="noreferrer">
                     {l}

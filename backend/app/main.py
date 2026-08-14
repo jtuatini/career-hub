@@ -1,3 +1,4 @@
+import hmac
 from pathlib import Path
 
 from fastapi import FastAPI, Request
@@ -44,7 +45,9 @@ async def require_api_token(request: Request, call_next):
     outermost and answers preflights (which never carry custom headers)."""
     path = request.url.path
     if path.startswith("/api") and path not in TOKEN_EXEMPT:
-        if request.headers.get("x-copilot-token") != auth.get_token():
+        if not hmac.compare_digest(
+            request.headers.get("x-copilot-token") or "", auth.get_token()
+        ):
             # New-tab PDF opens can't send headers: accept a short-lived signed ticket.
             params = request.query_params
             if (

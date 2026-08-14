@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -40,5 +41,15 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+# data/ holds everything personal (resumes, memory web, contacts): keep it out
+# of reach of other users on a shared machine. The 0o077 umask covers files
+# created from here on (DB + WAL/SHM sidecars, compiled PDFs) in every
+# entrypoint that imports config (uvicorn, alembic, the MCP server); the chmods
+# retrofit installs whose files predate it.
+os.umask(0o077)
 settings.data_dir.mkdir(parents=True, exist_ok=True)
 settings.files_dir.mkdir(parents=True, exist_ok=True)
+settings.data_dir.chmod(0o700)
+settings.files_dir.chmod(0o700)
+for _db_file in settings.data_dir.glob("appbot.sqlite3*"):
+    _db_file.chmod(0o600)

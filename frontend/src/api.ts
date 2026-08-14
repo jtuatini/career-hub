@@ -441,7 +441,8 @@ export const api = {
       jd_text: string;
       confidence: number;
     }>("/api/jobs/parse", { method: "POST", body: JSON.stringify(payload) }),
-  getExtensionToken: () => request<{ token: string }>("/api/profile/extension-token"),
+  getExtensionToken: () =>
+    request<{ token: string }>("/api/profile/extension-token", { method: "POST" }),
 
   getEngineStatus: () => request<EngineStatus>("/api/engine/status"),
   setEngineProvider: (provider: string) =>

@@ -53,19 +53,19 @@ def test_find_claude_binary_fallback(tmp_path, monkeypatch):
 
 
 def test_websocket_echo_and_replay(client, workspace_env):
-    with client.websocket_connect("/api/terminal/ws") as ws:
+    with client.websocket_connect("/api/terminal/ws", headers={"origin": "http://localhost:5173"}) as ws:
         ws.send_bytes(b"hello\n")
         received = b""
         while b"hello" not in received:
             received += ws.receive_bytes()
 
     # Session survived the disconnect; scrollback is replayed on reattach.
-    with client.websocket_connect("/api/terminal/ws") as ws:
+    with client.websocket_connect("/api/terminal/ws", headers={"origin": "http://localhost:5173"}) as ws:
         assert b"hello" in ws.receive_bytes()
 
 
 def test_restart_endpoint_discards_session(client, workspace_env):
-    with client.websocket_connect("/api/terminal/ws") as ws:
+    with client.websocket_connect("/api/terminal/ws", headers={"origin": "http://localhost:5173"}) as ws:
         ws.send_bytes(b"before-restart\n")
         received = b""
         while b"before-restart" not in received:
@@ -76,9 +76,22 @@ def test_restart_endpoint_discards_session(client, workspace_env):
     assert terminal_service._session is None
     assert old_proc.poll() is not None  # stub process was terminated
 
-    with client.websocket_connect("/api/terminal/ws") as ws:
+    with client.websocket_connect("/api/terminal/ws", headers={"origin": "http://localhost:5173"}) as ws:
         ws.send_bytes(b"fresh\n")
         received = b""
         while b"fresh" not in received:
             received += ws.receive_bytes()
         assert b"before-restart" not in received
+
+
+@pytest.mark.parametrize("headers", [
+    {"origin": "https://evil.example"},
+    {},  # absent Origin must be rejected too — the gate never fails open
+])
+def test_websocket_rejects_untrusted_origin(client, workspace_env, headers):
+    from starlette.websockets import WebSocketDisconnect
+
+    with pytest.raises(WebSocketDisconnect) as exc:
+        with client.websocket_connect("/api/terminal/ws", headers=headers):
+            pass
+    assert exc.value.code == 1008

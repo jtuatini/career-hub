@@ -206,8 +206,13 @@ async function requestPlan(tabId) {
 }
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  // Only our own extension's pages/scripts — never another extension.
+  if (sender.id !== chrome.runtime.id) return false;
   // Popup messages carry their own tabId (the popup has no sender.tab).
-  if (typeof msg.type === "string" && msg.type.startsWith("popup_")) {
+  // sender.tab must be absent: a content script — which runs on third-party
+  // job sites — must not be able to invoke popup powers like executeScript
+  // against arbitrary tabs.
+  if (typeof msg.type === "string" && msg.type.startsWith("popup_") && !sender.tab) {
     (async () => {
       const tabId = msg.tabId;
       if (msg.type === "popup_state") {
@@ -333,7 +338,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (tab) await startSession(tab);
       }
     } else if (msg.type === "open_app") {
-      chrome.tabs.create({ url: msg.url });
+      // Content scripts run on third-party sites: only ever open the local app.
+      if (/^http:\/\/(localhost|127\.0\.0\.1):5173(\/|$)/.test(msg.url ?? "")) {
+        chrome.tabs.create({ url: msg.url });
+      }
     } else if (msg.type === "open_options") {
       chrome.runtime.openOptionsPage();
     }

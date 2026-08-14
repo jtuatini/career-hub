@@ -41,10 +41,12 @@ def put_profile(payload: ProfileUpdate, db: Session = Depends(get_db)) -> dict[s
     return autofill_service.load_profile(db)
 
 
-@router.get("/extension-token")
+@router.post("/extension-token")
 def extension_token() -> dict[str, str]:
     """The shared API token, for pasting into the extension popup once.
-    Only reachable by already-authenticated callers (the web app)."""
+    Only reachable by already-authenticated callers (the web app). POST-only:
+    a deliberate reveal action, never a routine read that could end up in
+    caches, logs, or a casual same-origin fetch."""
     return {"token": auth.get_token()}
 
 

@@ -3,6 +3,7 @@ import { api } from "../api";
 import type { NetworkPerson, NetworkTarget } from "../api";
 import ConfirmButton from "../ConfirmButton";
 import EmptyState from "../EmptyState";
+import { safeHttpUrl } from "../url";
 
 const STATUS_FILTERS: [string, string][] = [
   ["", "All"],
@@ -518,7 +519,7 @@ function PersonCard({
   // too — an old row written before that gate, or any future write path
   // that skips it, must still render as a plain span, not a clickable
   // javascript: link.
-  const safeUrl = person.profile_url?.startsWith("http") ? person.profile_url : undefined;
+  const safeUrl = safeHttpUrl(person.profile_url);
 
   useEffect(() => {
     setConnectionNote(person.connection_note ?? "");
@@ -587,7 +588,7 @@ function PersonCard({
           {person.evidence_urls.length > 0 && (
             <p className="meta">
               Evidence:{" "}
-              {person.evidence_urls.map((u) => (
+              {person.evidence_urls.filter(safeHttpUrl).map((u) => (
                 <a key={u} href={u} target="_blank" rel="noreferrer" style={{ marginRight: 10 }}>
                   {safeHost(u)}
                 </a>

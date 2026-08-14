@@ -18,7 +18,10 @@ router = APIRouter(prefix="/api/terminal", tags=["terminal"])
 
 # Browser pages other than the local frontend must not reach the PTY: a malicious
 # site connecting here could drive the Claude session, including approving its own
-# tool calls. Non-browser clients send no Origin and can talk to localhost anyway.
+# tool calls. Membership is exact and the header is REQUIRED — browsers always
+# send Origin on WebSocket handshakes, so an absent header is a non-browser
+# client, and those must pass the same gate rather than fail open on the one
+# endpoint that amounts to command execution.
 ALLOWED_WS_ORIGINS = {"http://localhost:5173", "http://127.0.0.1:5173"}
 
 _active_ws: WebSocket | None = None
@@ -56,7 +59,7 @@ async def _pump_ws_to_session(ws: WebSocket, session: terminal_service.TerminalS
 async def terminal_ws(ws: WebSocket) -> None:
     global _active_ws
     origin = ws.headers.get("origin")
-    if origin is not None and origin not in ALLOWED_WS_ORIGINS:
+    if origin not in ALLOWED_WS_ORIGINS:
         await ws.close(code=1008)
         return
     await ws.accept()

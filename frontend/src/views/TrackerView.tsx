@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { safeHttpUrl } from "../url";
 import {
   api,
   pdfUrl,
@@ -104,7 +105,7 @@ export default function TrackerView({ focusJobId }: { focusJobId?: number }) {
                 >
                   <td>{job.company}</td>
                   <td>
-                    {job.url ? (
+                    {safeHttpUrl(job.url) ? (
                       <a href={job.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>
                         {job.title}
                       </a>
@@ -317,7 +318,7 @@ function ResearchPanel({ job }: { job: JobDetail }) {
           {research.sources.length > 0 && (
             <p className="meta">
               Sources:{" "}
-              {research.sources.map((s) => (
+              {research.sources.filter(safeHttpUrl).map((s) => (
                 <a key={s} href={s} target="_blank" rel="noreferrer" style={{ marginRight: 10 }}>
                   {new URL(s).hostname}
                 </a>
