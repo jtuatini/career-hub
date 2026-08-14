@@ -558,7 +558,12 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   font-size: 12px;
 }
 .engine-test-output.ok { border-color: var(--accent); }
-.engine-test-output .engine-test-headline { font-weight: 600; margin-bottom: 2px; }
+.engine-test-output .engine-test-headline {
+  font-weight: 600;
+  margin-bottom: 2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .engine-test-output pre {
   /* Full model/error output, readable: wrap everything, scroll past 140px. */
   margin: 0;
@@ -827,9 +832,12 @@ button.active-toggle { border-color: var(--accent); color: var(--accent); backgr
   flex-direction: column;
   gap: 2px;
 }
-/* Flex children won't shrink below content width by default — long unbroken
-   strings (model ids, error JSON) would push rows past the panel edge. */
-.navmenu-panel > * { min-width: 0; }
+/* Flex children won't shrink below content width by default — long strings
+   (model ids, error JSON) would push rows past the panel edge. The rows are
+   themselves flex columns, so this must apply at every depth, not just the
+   panel's direct children. */
+.navmenu-panel * { min-width: 0; }
+.navmenu-panel { overflow-x: hidden; }
 .navmenu-item {
   text-align: left;
   font-size: 12px;
